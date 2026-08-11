@@ -1,0 +1,12 @@
+allowBuilds:
+  '@parcel/watcher': true
+  aws-sdk: true
+  core-js: true
+  core-js-pure: true
+  es5-ext: true
+  gatsby: true
+  gatsby-cli: true
+  lmdb: true
+  msgpackr-extract: true
+  sharp: true
+  unrs-resolver: true
