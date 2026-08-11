@@ -40,6 +40,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check GraphQL schema compatibility
+        run: pnpm --dir studio exec sanity graphql deploy --dry-run
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+      - name: Deploy GraphQL API
+        run: pnpm --dir studio exec sanity graphql deploy --force
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
       - name: Deploy Sanity Studio
         run: pnpm --dir studio run deploy
         env:
