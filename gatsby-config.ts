@@ -1,21 +1,8 @@
 import { GatsbyConfig } from 'gatsby';
 
-const path = require('path');
-
 require('dotenv').config({
   path: '.env',
 });
-// Get paths of Gatsby's required rules, which as of writing is located at:
-// https://github.com/gatsbyjs/gatsby/tree/fbfe3f63dec23d279a27b54b4057dd611dce74bb/packages/
-// gatsby/src/utils/eslint-rules
-const gatsbyRequiredRules = path.join(
-  process.cwd(),
-  'node_modules',
-  'gatsby',
-  'dist',
-  'utils',
-  'eslint-rules',
-);
 
 const myCustomQueries = {
   xs: '(max-width: 390px)',
@@ -41,7 +28,7 @@ const config: GatsbyConfig = {
       resolve: 'gatsby-plugin-google-tagmanager',
       options: {
         id: 'GTM-5VC2QN8Z',
-        includeInDevelopment: true,
+        includeInDevelopment: false,
         defaultDataLayer: { platform: 'gatsby' },
       },
     },
@@ -50,19 +37,6 @@ const config: GatsbyConfig = {
     'gatsby-plugin-sharp',
     'gatsby-transformer-sharp', // Needed for dynamic images
     {
-      resolve: 'gatsby-plugin-eslint',
-      options: {
-        // Gatsby required rules directory
-        rulePaths: [gatsbyRequiredRules],
-        // Default settings that may be omitted or customized
-        stages: ['develop'],
-        extensions: ['js', 'jsx', 'ts', 'tsx'],
-        exclude: ['node_modules', 'bower_components', '.cache', 'public'],
-        // Any additional eslint-webpack-plugin options below
-        // ...
-      },
-    },
-    {
       resolve: 'gatsby-plugin-manifest',
       options: {
         name: 'yourssu',
@@ -70,23 +44,6 @@ const config: GatsbyConfig = {
         start_url: '/',
         icon: 'src/assets/logo/logo.svg',
         cache_busting_mode: 'query',
-      },
-    },
-    {
-      resolve: 'gatsby-plugin-react-svg',
-      options: {
-        rule: {
-          include: '/assets/', // See below to configure properly
-        },
-      },
-    },
-    {
-      resolve: 'gatsby-source-filesystem',
-      options: {
-        // The unique name for each instance
-        name: 'logo',
-        // Path to the directory
-        path: `${__dirname}/src/assets/logo`,
       },
     },
     {
@@ -115,13 +72,6 @@ const config: GatsbyConfig = {
       },
     },
     {
-      resolve: 'gatsby-source-filesystem',
-      options: {
-        name: 'socials',
-        path: `${__dirname}/src/assets/socials`,
-      },
-    },
-    {
       resolve: `gatsby-source-sanity`,
       options: {
         projectId: process.env.GATSBY_APP_SANITY_PROJECT_ID,
@@ -135,16 +85,6 @@ const config: GatsbyConfig = {
       resolve: 'gatsby-plugin-breakpoints',
       options: {
         queries: myCustomQueries,
-      },
-    },
-    {
-      resolve: 'gatsby-plugin-s3',
-      options: {
-        bucketName: 'yourssu.com',
-        region: 'ap-northeast-2',
-        protocol: 'https',
-        hostname: 'yourssu.com',
-        acl: null,
       },
     },
   ],
