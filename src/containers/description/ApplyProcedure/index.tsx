@@ -36,10 +36,7 @@ function ApplyProcedure({ applyProcedure }: ApplyProcedureProps) {
   if (!applyProcedure || applyProcedure.length === 0) return null;
 
   return (
-    <section
-      className="inline-flex flex-col items-start justify-start gap-6 self-stretch rounded-[12px] p-6 outline outline-1 
-    outline-offset-[-1px] outline-[#F1F1F4] xs:p-5 sm:p-5"
-    >
+    <section className="inline-flex flex-col items-start justify-start gap-6 self-stretch rounded-[12px] p-6 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4] xs:p-5 sm:p-5">
       <TitleContainer>
         <div className="T3_Sb_20 sm:T2_Sb_18 xs:T2_Sb_18 text-text-basicPrimary">
           합류 여정
@@ -63,10 +60,7 @@ function ApplyProcedure({ applyProcedure }: ApplyProcedureProps) {
       {/* 합류 일정 그래프 부분 */}
       <div className="flex items-center gap-6 self-stretch px-3 py-0 xs:items-end xs:justify-center sm:items-end sm:justify-center">
         {/* 왼쪽: 날짜 */}
-        <div
-          className="B2_Sb_15 sm:B4_Rg_13 xs:B4_Rg_13 flex min-w-fit flex-col items-end justify-center gap-8 bg-gradient-to-b
-         from-mainGra1-0 to-mainGra2-0 bg-clip-text text-transparent"
-        >
+        <div className="B2_Sb_15 sm:B4_Rg_13 xs:B4_Rg_13 flex min-w-fit flex-col items-end justify-center gap-8 bg-gradient-to-b from-mainGra1-0 to-mainGra2-0 bg-clip-text text-transparent">
           {applyProcedure.map((item) => (
             <div key={item.schedule}>{item.schedule}</div>
           ))}

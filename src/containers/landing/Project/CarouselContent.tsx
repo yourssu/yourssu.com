@@ -40,7 +40,7 @@ function CarouselContent({ currentIndex, isType }: Props) {
         )}
       </div>
       <div className="relative flex flex-col items-start justify-center xs:mb-[5px] sm:mb-[5px] md:mb-[10px]">
-        <span className="absolute -top-[75px] left-[5px] font-apple-neo text-[70px] font-extrabold leading-[115px] -tracking-[0.03em] text-[#000000] opacity-10 xs:-top-[60px] xs:left-[10px] xs:text-[40px] xs:-tracking-[0.05em] sm:-left-[20px] sm:-top-[65px] sm:text-[48px] sm:-tracking-[0.05em] ">
+        <span className="absolute -top-[75px] left-[5px] font-apple-neo text-[70px] font-extrabold leading-[115px] -tracking-[0.03em] text-[#000000] opacity-10 xs:-top-[60px] xs:left-[10px] xs:text-[40px] xs:-tracking-[0.05em] sm:-left-[20px] sm:-top-[65px] sm:text-[48px] sm:-tracking-[0.05em]">
           0{currentIndex + 1}
         </span>
         <div className="flex flex-col px-[50px] xs:px-[32px] sm:px-[10px]">

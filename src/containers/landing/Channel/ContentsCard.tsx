@@ -17,7 +17,12 @@ export function ContentsCard({
 }: ContentsCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   return (
-    <a href={contentUrl} target="_blank" rel="noopener noreferrer">
+    <a
+      href={contentUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={title}
+    >
       <div
         className="inline-flex flex-col items-start justify-center gap-[20px]"
         onMouseEnter={() => setIsHovered(true)}

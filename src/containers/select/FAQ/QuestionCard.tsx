@@ -37,22 +37,10 @@ export default function QuestionCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-[12px] text-left xs:gap-[8px] sm:gap-[8px]">
               <div className="relative h-6 w-6 flex-shrink-0">
-                <QuestionEmptyIcon
-                  className="absolute inset-0 transition-opacity duration-300
-                           group-data-[state=closed]:opacity-100 
-                           group-data-[state=open]:opacity-0"
-                />
-                <QuestionFillIcon
-                  className="absolute inset-0 transition-opacity duration-300
-                           group-data-[state=closed]:opacity-0 
-                           group-data-[state=open]:opacity-100"
-                />
+                <QuestionEmptyIcon className="absolute inset-0 transition-opacity duration-300 group-data-[state=closed]:opacity-100 group-data-[state=open]:opacity-0" />
+                <QuestionFillIcon className="absolute inset-0 transition-opacity duration-300 group-data-[state=closed]:opacity-0 group-data-[state=open]:opacity-100" />
               </div>
-              <p
-                className="group-data-[state=open]:T3_Sb_20 group-data-[state=closed]:T3_Rg_20 
-              sm:B1_Sb_16 sm:group-data-[state=closed]:B1_Rg_16 sm:group-data-[state=open]:B1_Sb_16 xs:B1_Sb_16 xs:group-data-[state=closed]:B1_Rg_16 xs:group-data-[state=open]:B1_Sb_16
-              group-data-[state=closed]:text-text-basicSecondary group-data-[state=open]:text-text-basicPrimary"
-              >
+              <p className="group-data-[state=open]:T3_Sb_20 group-data-[state=closed]:T3_Rg_20 sm:B1_Sb_16 sm:group-data-[state=closed]:B1_Rg_16 sm:group-data-[state=open]:B1_Sb_16 xs:B1_Sb_16 xs:group-data-[state=closed]:B1_Rg_16 xs:group-data-[state=open]:B1_Sb_16 group-data-[state=closed]:text-text-basicSecondary group-data-[state=open]:text-text-basicPrimary">
                 {question}
               </p>
             </div>

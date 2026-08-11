@@ -9,8 +9,7 @@ function Channel() {
       </h3>
 
       <div
-        className="flex w-full justify-center gap-5 
-          xs:justify-start xs:overflow-x-scroll sm:justify-start sm:overflow-x-scroll md:justify-start md:overflow-x-scroll"
+        className="flex w-full justify-center gap-5 xs:justify-start xs:overflow-x-scroll sm:justify-start sm:overflow-x-scroll md:justify-start md:overflow-x-scroll"
         id="scrollbar-hide"
       >
         {CHANNELS_DATA.map((channel) => (

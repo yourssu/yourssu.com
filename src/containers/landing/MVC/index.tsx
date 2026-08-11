@@ -9,7 +9,7 @@ function MVC() {
     <div className="flex w-full flex-col items-center gap-[115px] bg-[#F5F5F5] py-[140px] xs:py-20 sm:py-[110px] md:py-[120px]">
       <SectionIntro title="MVC" linerColor="gra" textColor="ver1" />
       <div className="flex px-5 xs:px-0">
-        <div className="flex w-full  max-w-[890px] flex-col gap-12 xs:max-w-[240px] sm:max-w-[440px] md:max-w-[760px]">
+        <div className="flex w-full max-w-[890px] flex-col gap-12 xs:max-w-[240px] sm:max-w-[440px] md:max-w-[760px]">
           <div className="flex w-full gap-8 xs:flex-col sm:flex-col">
             {items.map((item) => (
               <SectionContainer key={item.title} title={item.title}>
