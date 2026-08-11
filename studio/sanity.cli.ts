@@ -5,4 +5,5 @@ export default defineCliConfig({
     projectId: 'f877vcud',
     dataset: 'production',
   },
+  studioHost: 'yourssu-page',
 });
