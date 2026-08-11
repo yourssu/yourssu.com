@@ -8,6 +8,7 @@
     "dev": "sanity dev",
     "start": "sanity start",
     "build": "sanity build",
+    "typecheck": "tsc --noEmit",
     "deploy": "sanity deploy",
     "deploy-graphql": "sanity graphql deploy"
   },
