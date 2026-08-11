@@ -32,6 +32,12 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Typecheck Studio
+        run: pnpm --dir studio run typecheck
+
+      - name: Build Studio
+        run: pnpm --dir studio run build
+
       - name: Lint
         run: pnpm lint
 
