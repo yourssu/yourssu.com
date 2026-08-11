@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'roadToProContent',
@@ -13,7 +13,7 @@ export default defineType({
       name: 'roadToPro_list',
       title: '영상 목록',
       type: 'array',
-      of: [{type: 'reference', to: [{type: 'roadToPro'}]}],
+      of: [{ type: 'reference', to: [{ type: 'roadToPro' }] }],
     }),
   ],
-})
+});

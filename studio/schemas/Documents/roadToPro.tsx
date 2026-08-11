@@ -1,5 +1,5 @@
-import {FaFileVideo as icon} from 'react-icons/fa'
-import {defineField, defineType} from 'sanity'
+import { FaFileVideo as icon } from 'react-icons/fa';
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'roadToPro',
@@ -16,7 +16,7 @@ export default defineType({
       name: 'presenter',
       title: '발표자',
       type: 'array',
-      of: [{type: 'presenterContent'}],
+      of: [{ type: 'presenterContent' }],
     }),
     defineField({
       name: 'video_link',
@@ -30,17 +30,17 @@ export default defineType({
       media: 'video_thumbnail',
     },
     prepare(selection) {
-      const {presenter, media} = selection
+      const { presenter, media } = selection;
       const firstPresenter =
         presenter && presenter.length > 0
           ? presenter[0]
-          : {presenter_nickname: 'No presenter', presenter_name: 'No name'}
+          : { presenter_nickname: 'No presenter', presenter_name: 'No name' };
 
       return {
         title: firstPresenter.presenter_nickname,
         subtitle: firstPresenter.presenter_name,
         media: media,
-      }
+      };
     },
   },
-})
+});

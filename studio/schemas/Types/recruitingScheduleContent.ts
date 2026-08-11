@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'recruitingScheduleContent',
@@ -19,7 +19,8 @@ export default defineType({
     defineField({
       name: 'individualSchedule',
       title: '부서 내부 일정으로 리쿠르팅 진행',
-      description: '해당 항목을 선택할 경우, 아래의 "부서 내부 일정"의 하위 항목을 입력해주세요.',
+      description:
+        '해당 항목을 선택할 경우, 아래의 "부서 내부 일정"의 하위 항목을 입력해주세요.',
       type: 'boolean',
       initialValue: false,
     }),
@@ -36,7 +37,7 @@ export default defineType({
       description:
         '"부서 내부 일정으로 리쿠르팅 진행"을 선택하지 않을 시, 해당 항목은 비공개됩니다.',
       type: 'array',
-      of: [{type: 'applyStepContent'}],
+      of: [{ type: 'applyStepContent' }],
     }),
   ],
-})
+});

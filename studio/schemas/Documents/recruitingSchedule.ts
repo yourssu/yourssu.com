@@ -1,5 +1,5 @@
-import {FaCalendar as icon} from 'react-icons/fa'
-import {defineField, defineType} from 'sanity'
+import { FaCalendar as icon } from 'react-icons/fa';
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'recruitingSchedule',
@@ -24,7 +24,7 @@ export default defineType({
       name: 'procedure',
       title: '전체 지원 절차',
       type: 'array',
-      of: [{type: 'applyStepContent'}],
+      of: [{ type: 'applyStepContent' }],
     }),
   ],
   preview: {
@@ -32,4 +32,4 @@ export default defineType({
       title: 'title',
     },
   },
-})
+});

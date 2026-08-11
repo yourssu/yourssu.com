@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   title: '부서 기본 정보',
@@ -39,7 +39,8 @@ export default defineType({
       name: 'long_introduction',
       title: '상세 소개',
       type: 'text',
-      description: '소개 페이지에서 줄바꿈도 반영됩니다. 이를 고려해서 작성해주세요.',
+      description:
+        '소개 페이지에서 줄바꿈도 반영됩니다. 이를 고려해서 작성해주세요.',
     }),
     defineField({
       name: 'apply_link',
@@ -47,4 +48,4 @@ export default defineType({
       type: 'string',
     }),
   ],
-})
+});

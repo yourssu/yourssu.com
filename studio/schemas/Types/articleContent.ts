@@ -1,4 +1,4 @@
-import {defineField,  defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'articleContent',
@@ -17,4 +17,4 @@ export default defineType({
       of: [{ type: 'article' }],
     }),
   ],
-})
+});

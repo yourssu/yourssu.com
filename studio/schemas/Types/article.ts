@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   type: 'object',
@@ -8,25 +8,25 @@ export default defineType({
       name: 'url',
       title: 'URL',
       type: 'string',
-      description: '미디엄 글 링크를 입력해주세요.'
+      description: '미디엄 글 링크를 입력해주세요.',
     }),
     defineField({
       name: 'title',
       type: 'string',
       title: '제목',
-      description: '미디엄 글 제목을 입력해주세요.'
+      description: '미디엄 글 제목을 입력해주세요.',
     }),
     defineField({
       name: 'author',
       type: 'string',
       title: '저자',
-      description: '미디엄 글 저자를 입력해주세요.'
+      description: '미디엄 글 저자를 입력해주세요.',
     }),
     defineField({
       name: 'description',
       type: 'string',
       title: '설명',
-      description: '미디엄 글 설명을 입력해주세요.'
+      description: '미디엄 글 설명을 입력해주세요.',
     }),
     defineField({
       name: 'image',
@@ -36,9 +36,9 @@ export default defineType({
     }),
   ],
   preview: {
-  select: {
-    title: 'title',
-    subtitle: 'author',
+    select: {
+      title: 'title',
+      subtitle: 'author',
+    },
   },
-},
-})
+});

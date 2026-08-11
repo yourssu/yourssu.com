@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'presenterContent',
@@ -21,14 +21,18 @@ export default defineType({
       subtitle: 'presenter_name',
     },
     prepare(selection) {
-      const {title, subtitle} = selection
-      const checkInformation = title && subtitle
+      const { title, subtitle } = selection;
+      const checkInformation = title && subtitle;
 
       return {
         title: title,
         subtitle: subtitle,
-        media: checkInformation ? <span style={{fontSize: '1.2rem'}}>✅</span> : <span>❌</span>,
-      }
+        media: checkInformation ? (
+          <span style={{ fontSize: '1.2rem' }}>✅</span>
+        ) : (
+          <span>❌</span>
+        ),
+      };
     },
   },
-})
+});

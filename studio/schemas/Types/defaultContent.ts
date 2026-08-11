@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'defaultContent',
@@ -14,7 +14,7 @@ export default defineType({
       title: '내용',
       description: '소제목은 [소제목] 형식으로 입력해주세요.',
       type: 'array',
-      of: [{type: 'string'}],
+      of: [{ type: 'string' }],
     }),
   ],
-})
+});

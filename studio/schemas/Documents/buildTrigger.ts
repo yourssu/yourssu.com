@@ -1,5 +1,5 @@
-import {MdOutlineUpdate as icon} from 'react-icons/md'
-import {defineType} from 'sanity'
+import { MdOutlineUpdate as icon } from 'react-icons/md';
+import { defineType } from 'sanity';
 
 export default defineType({
   name: 'buildTrigger',
@@ -15,4 +15,4 @@ export default defineType({
       type: 'datetime',
     },
   ],
-})
+});
