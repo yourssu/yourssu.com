@@ -1,9 +1,13 @@
+packages:
+  - studio
+
 allowBuilds:
   '@parcel/watcher': true
   aws-sdk: true
   core-js: true
   core-js-pure: true
   es5-ext: true
+  esbuild: true
   gatsby: true
   gatsby-cli: true
   lmdb: true
