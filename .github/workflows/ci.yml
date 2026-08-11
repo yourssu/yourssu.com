@@ -1,4 +1,4 @@
-name: Typecheck
+name: CI
 
 on: pull_request
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  typecheck:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -27,7 +27,13 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format:check
