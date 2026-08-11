@@ -20,10 +20,10 @@ pnpm clean     # Clean cache and public folder
 ### Code Quality
 
 ```bash
-pnpm typecheck  # TypeScript type checking
+pnpm lint          # Oxlint
+pnpm format:check  # Oxfmt formatting check
+pnpm typecheck     # TypeScript type checking
 ```
-
-Note: ESLint runs automatically during development via gatsby-plugin-eslint.
 
 ### Deployment
 
@@ -35,12 +35,12 @@ pnpm deploy  # Deploy to AWS S3 (requires AWS credentials)
 
 ### Tech Stack
 
-- **Framework**: Gatsby 5.13.1 (React 18 SSG)
+- **Framework**: Gatsby 5.16.1 (React 18 SSG)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS + tailwind-styled-components
 - **CMS**: Sanity (project ID: f877vcud)
-- **Package Manager**: pnpm 9.7.0
-- **Node**: >=18.0.0
+- **Package Manager**: pnpm 11.21.0
+- **Node**: 24.x
 
 ### Key Patterns
 
@@ -60,7 +60,7 @@ The site dynamically generates department recruiting pages from Sanity CMS:
 
 ### Project Structure
 
-```
+```text
 src/
 ├── containers/        # Page sections with business logic
 │   ├── landing/      # Homepage sections
@@ -77,7 +77,7 @@ src/
 
 Required `.env` file (not in repo):
 
-```
+```dotenv
 GATSBY_APP_SANITY_TOKEN=<token>
 GATSBY_APP_SANITY_PROJECT_ID=f877vcud
 GATSBY_APP_SANITY_DATASET=production
@@ -86,10 +86,11 @@ GATSBY_APP_GA_ID=<google_analytics_id>
 
 ## Styling
 
-- Custom Tailwind breakpoints: xs(360px), sm(400px), md(768px), lg(1080px), xl(1440px), xxl(1920px)
+- Custom Tailwind breakpoints: xs(360px), sm(400px), md(768px), lg(1080px),
+  xl(1440px), xxl(1920px)
 - Pretendard font family (Regular, SemiBold, Bold)
 - Mobile-first responsive design
-- Class sorting via prettier-plugin-tailwindcss
+- Class sorting via Oxfmt
 
 ## Important Files
 
@@ -101,9 +102,12 @@ GATSBY_APP_GA_ID=<google_analytics_id>
 ## Development Notes
 
 - No test framework currently configured
-- ESLint + Prettier enforced (Airbnb config)
+- Oxlint + Oxfmt enforced
 - Import order enforced with alphabetical sorting
 - GraphQL queries use `useStaticQuery` hook
 - Images processed through gatsby-plugin-image
-- CI/CD uses npm (not pnpm) - see `.github/workflows/deploy.yml`
-- 이 프로젝트에서는 항상 반응형을 신경써야해, xs: 390px, query550: 550px, query669: 669px, sm: 720px, md: 1080px, lg: 1440px, xl: 1920px 기준이야, figma에 반응형으로 디자인이 안되어 있어도 항상 반응형을 생각해서 만들어줘 gatsby-config.ts에서 자세한 사항 참고
+- CI/CD uses pnpm - see `.github/workflows/deploy.yml`
+- 이 프로젝트에서는 항상 반응형을 신경써야해, xs: 390px, query550: 550px,
+  query669: 669px, sm: 720px, md: 1080px, lg: 1440px, xl: 1920px 기준이야.
+  figma에 반응형으로 디자인이 안 되어 있어도 항상 반응형을 생각해서 만들어줘.
+  자세한 사항은 `gatsby-config.ts` 참고.
