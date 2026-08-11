@@ -19,7 +19,7 @@ function About() {
         <AboutImage image={aboutImgData.image} alt={aboutImgData.name} />
       )}
       <SubContainer className="flex flex-col items-start justify-center sm:items-center">
-        <SubContainerTop className="flex flex-col items-start sm:items-center sm:justify-center ">
+        <SubContainerTop className="flex flex-col items-start sm:items-center sm:justify-center">
           <div className="flex items-center">
             <Title>ABOUT YOURSSU</Title>
             <Link to="/">
@@ -38,7 +38,7 @@ function About() {
         <ListSection className="flex flex-col">
           {aboutDescription.map((value, index) => {
             return (
-              <List className=" flex justify-start" key={index!}>
+              <List className="flex justify-start" key={index!}>
                 <ListImage src={listImgData.publicURL} alt={listImgData.name} />
                 <ListItem>{value}</ListItem>
               </List>

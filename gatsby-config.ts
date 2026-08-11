@@ -38,11 +38,11 @@ const config: GatsbyConfig = {
   // don't need to define it here (just if you need to change the options)
   plugins: [
     {
-      resolve: "gatsby-plugin-google-tagmanager",
+      resolve: 'gatsby-plugin-google-tagmanager',
       options: {
-        id: "GTM-5VC2QN8Z",
+        id: 'GTM-5VC2QN8Z',
         includeInDevelopment: true,
-        defaultDataLayer: { platform: "gatsby" },
+        defaultDataLayer: { platform: 'gatsby' },
       },
     },
     'gatsby-plugin-postcss',

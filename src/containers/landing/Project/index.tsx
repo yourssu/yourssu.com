@@ -11,7 +11,7 @@ function Project() {
   return (
     <div className="relative mb-[350px] flex flex-col items-center xs:mb-[260px] sm:mb-[200px] md:mb-[300px]">
       <img
-        className=" absolute top-0 -z-10 h-[446px] w-full xs:h-[270px] sm:h-[357px]"
+        className="absolute top-0 -z-10 h-[446px] w-full xs:h-[270px] sm:h-[357px]"
         src={backgroundImgData.nodes[0].publicURL}
         alt={backgroundImgData.nodes[0].name}
       />

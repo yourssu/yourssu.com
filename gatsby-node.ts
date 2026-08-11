@@ -273,10 +273,11 @@ export const createPages: GatsbyNode['createPages'] = async ({
   });
 };
 
-export const createSchemaCustomization: GatsbyNode["createSchemaCustomization"] = ({ actions }) => {
-  const { createTypes } = actions;
-  
-  const typeDefs = `
+export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] =
+  ({ actions }) => {
+    const { createTypes } = actions;
+
+    const typeDefs = `
     type SanityDefaultContent {
       title: String
       content: [String]
@@ -314,5 +315,5 @@ export const createSchemaCustomization: GatsbyNode["createSchemaCustomization"] 
       medium: SanityArticleContent
     }
   `;
-  createTypes(typeDefs);
-};
+    createTypes(typeDefs);
+  };

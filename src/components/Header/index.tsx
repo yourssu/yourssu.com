@@ -16,10 +16,9 @@ function Header({ isMainPage }: Props) {
 
   return (
     <header
-      className={`fixed left-0 top-0 z-50 flex h-[80px] w-full flex-col items-center justify-center gap-[56.25rem] 
-        self-stretch bg-white-0 px-28 py-6 xs:h-14 xs:gap-60 xs:px-4 xs:py-3 sm:h-14 sm:gap-60 sm:px-4 sm:py-3 ${
-          isClick && 'bg-white-0'
-        }`}
+      className={`fixed left-0 top-0 z-50 flex h-[80px] w-full flex-col items-center justify-center gap-[56.25rem] self-stretch bg-white-0 px-28 py-6 xs:h-14 xs:gap-60 xs:px-4 xs:py-3 sm:h-14 sm:gap-60 sm:px-4 sm:py-3 ${
+        isClick && 'bg-white-0'
+      }`}
     >
       <div className="flex w-full items-center justify-between">
         <Link to="/" className="flex items-center justify-between">
@@ -50,7 +49,6 @@ function Header({ isMainPage }: Props) {
           </Link>
         </nav>
         <button
-          aria-hidden="true"
           type="button"
           className="hidden xs:block sm:block"
           onClick={() => {
@@ -69,17 +67,13 @@ function Header({ isMainPage }: Props) {
         <nav className="absolute left-0 top-14 flex h-auto w-full flex-col items-start justify-start bg-white-0 md:hidden lg:hidden xl:hidden xxl:hidden">
           <Link
             to="/"
-            className={`
-              B1_Rg_16 p-5 !font-bold 
-              ${isMainPage ? 'text-text-basicSecondary' : 'text-text-basicTertiary'}`}
+            className={`B1_Rg_16 p-5 !font-bold ${isMainPage ? 'text-text-basicSecondary' : 'text-text-basicTertiary'}`}
           >
             MAIN
           </Link>
           <Link
             to="/recruiting"
-            className={`
-              B1_Rg_16 p-5 !font-bold 
-              ${isMainPage ? 'text-text-basicTertiary' : 'text-text-basicSecondary'}`}
+            className={`B1_Rg_16 p-5 !font-bold ${isMainPage ? 'text-text-basicTertiary' : 'text-text-basicSecondary'}`}
           >
             RECRUITING
           </Link>

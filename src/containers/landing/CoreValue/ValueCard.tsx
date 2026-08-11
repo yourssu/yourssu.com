@@ -26,10 +26,7 @@ export function ValueCard({
   return (
     <motion.div
       onMouseEnter={onMouseEnter}
-      className={`relative h-[16.25rem] w-[12.188rem] cursor-pointer overflow-hidden rounded-[1rem] 
-        transition-all duration-300 xs:h-[152px] xs:w-[108px] sm:h-[152px] sm:w-[108px]
-        ${isHovered ? 'scale-105 z-20' : 'z-0'}
-      `}
+      className={`relative h-[16.25rem] w-[12.188rem] cursor-pointer overflow-hidden rounded-[1rem] transition-all duration-300 xs:h-[152px] xs:w-[108px] sm:h-[152px] sm:w-[108px] ${isHovered ? 'scale-105 z-20' : 'z-0'} `}
     >
       {/* 1. 배경 이미지 (고정) */}
       <div
@@ -40,8 +37,7 @@ export function ValueCard({
       {/* 2. 앞면 (isHovered가 아닐 때만 노출) */}
       {!isHovered && (
         <div
-          className={`absolute inset-0 flex flex-col items-start justify-start gap-[6px] px-[18px] py-[17px]
-             xs:px-3 xs:py-4 sm:px-3 sm:py-4 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute inset-0 flex flex-col items-start justify-start gap-[6px] px-[18px] py-[17px] xs:px-3 xs:py-4 sm:px-3 sm:py-4 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
         >
           <h3 className="T3_Sb_20 xs:B1_Sb_16 sm:B1_Sb_16 whitespace-pre-wrap text-[#000]">
             {title}
@@ -57,8 +53,7 @@ export function ValueCard({
       {/* 3. 뒷면 (isHovered일 때만 노출) */}
       {isHovered && (
         <div
-          className={`bg-white absolute inset-0 flex flex-col items-start justify-start bg-opacity-90 
-            px-[14px] py-[17px] xs:items-center sm:items-center ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+          className={`bg-white absolute inset-0 flex flex-col items-start justify-start bg-opacity-90 px-[14px] py-[17px] xs:items-center sm:items-center ${isHovered ? 'opacity-100' : 'opacity-0'}`}
         >
           {Array.isArray(description) ? (
             <div className="flex flex-col gap-1">

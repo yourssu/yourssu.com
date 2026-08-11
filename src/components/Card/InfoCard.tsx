@@ -16,9 +16,7 @@ function InfoCard<T extends DefaultDataType>({
 }: IdealCardProps<T>) {
   return (
     <div
-      className={`flex w-full flex-1 flex-col items-start gap-6 rounded-[12px] border border-line-basicLight p-6 xs:p-5 sm:p-5
-            ${className}
-        `}
+      className={`flex w-full flex-1 flex-col items-start gap-6 rounded-[12px] border border-line-basicLight p-6 xs:p-5 sm:p-5 ${className} `}
     >
       <div className="flex flex-col items-start gap-3 self-stretch">
         <div className="flex items-center gap-[0.38rem] self-stretch">
