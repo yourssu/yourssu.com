@@ -13,7 +13,7 @@ import roadToProContent from './Types/roadToProContent';
 import skillContent from './Types/skillContent';
 import articleContent from './Types/articleContent';
 import article from './Types/article';
-import FAQContent from './Types/FAQContent';
+import FAQContent, { FAQItem } from './Types/FAQContent';
 
 export const schemaTypes = [
   // Document types
@@ -34,5 +34,6 @@ export const schemaTypes = [
   dateContent,
   articleContent,
   article,
+  FAQItem,
   FAQContent,
 ];
