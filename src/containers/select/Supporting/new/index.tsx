@@ -43,8 +43,8 @@ function Supporting({ data }: SupportingProps) {
       />
 
       <div className="grid grid-cols-3 gap-5 xs:grid-cols-1 sm:grid-cols-1 md:grid-cols-2">
-        {data.cards.map(({ _key, department, isRecruiting }) => {
-          const name = department.basicInformation.name;
+        {data.cards.map(({ _key, department }) => {
+          const { icon, isRecruiting, name } = department.basicInformation;
           const IconComponent = icons[name as keyof typeof icons];
 
           return isRecruiting ? (
@@ -59,11 +59,7 @@ function Supporting({ data }: SupportingProps) {
               {IconComponent ? (
                 <IconComponent />
               ) : (
-                <img
-                  src={department.basicInformation.icon.asset.url}
-                  alt=""
-                  className="h-14 w-14"
-                />
+                <img src={icon.asset.url} alt="" className="h-14 w-14" />
               )}
             </Link>
           ) : (

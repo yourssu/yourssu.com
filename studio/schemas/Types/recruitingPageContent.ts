@@ -59,19 +59,12 @@ const position = defineType({
       to: [{ type: 'department' }],
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'isRecruiting',
-      title: '모집 중',
-      type: 'boolean',
-      initialValue: true,
-      validation: (rule) => rule.required(),
-    }),
   ],
   preview: {
     select: {
       title: 'department.basicInformation.name',
       media: 'department.basicInformation.icon',
-      isRecruiting: 'isRecruiting',
+      isRecruiting: 'department.basicInformation.isRecruiting',
     },
     prepare({ title, media, isRecruiting }) {
       return {

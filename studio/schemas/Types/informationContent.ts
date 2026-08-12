@@ -43,6 +43,15 @@ export default defineType({
         '소개 페이지에서 줄바꿈도 반영됩니다. 이를 고려해서 작성해주세요.',
     }),
     defineField({
+      name: 'isRecruiting',
+      title: '리쿠르팅 활성화',
+      description:
+        '활성화하면 리쿠르팅 랜딩과 부서 네비게이션에서 상세 페이지에 접근할 수 있습니다.',
+      type: 'boolean',
+      initialValue: false,
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'apply_link',
       title: '지원서 링크',
       type: 'string',

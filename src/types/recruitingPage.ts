@@ -17,11 +17,11 @@ export interface RecruitingPageData {
     header: Header;
     cards: {
       _key: string;
-      isRecruiting: boolean;
       department: {
         basicInformation: {
           name: string;
           icon: SanityImage;
+          isRecruiting: boolean;
         };
       };
     }[];

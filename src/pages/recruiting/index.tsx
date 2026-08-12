@@ -56,10 +56,10 @@ export const query = graphql`
           }
           cards {
             _key
-            isRecruiting
             department {
               basicInformation {
                 name
+                isRecruiting
                 icon {
                   asset {
                     url

@@ -81,7 +81,10 @@ export const createPages: GatsbyNode['createPages'] = async ({
 
   const result = await graphql<QueryResult>(`
     {
-      allSanityDepartment(sort: { basicInformation: { key: ASC } }) {
+      allSanityDepartment(
+        filter: { basicInformation: { isRecruiting: { eq: true } } }
+        sort: { basicInformation: { key: ASC } }
+      ) {
         edges {
           node {
             basicInformation {
