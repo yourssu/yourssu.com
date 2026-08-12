@@ -8,6 +8,7 @@ interface QueryResult {
       node: {
         basicInformation: {
           name: string;
+          isRecruiting: boolean;
         };
         applyProcedure: {
           scheduleWithoutAssignment: boolean;
@@ -81,14 +82,12 @@ export const createPages: GatsbyNode['createPages'] = async ({
 
   const result = await graphql<QueryResult>(`
     {
-      allSanityDepartment(
-        filter: { basicInformation: { isRecruiting: { eq: true } } }
-        sort: { basicInformation: { key: ASC } }
-      ) {
+      allSanityDepartment(sort: { basicInformation: { key: ASC } }) {
         edges {
           node {
             basicInformation {
               name
+              isRecruiting
             }
             applyProcedure {
               scheduleWithoutAssignment
@@ -155,8 +154,8 @@ export const createPages: GatsbyNode['createPages'] = async ({
     'src/templates/DescriptionTemplate.tsx',
   );
 
-  const nameList = queryAllSanityData?.allSanityDepartment.edges.map(
-    (edge) => edge.node.basicInformation.name,
+  const teamList = queryAllSanityData?.allSanityDepartment.edges.map(
+    (edge) => edge.node.basicInformation,
   );
 
   const checkRecruitType = (recruitTypeData: {
@@ -259,7 +258,7 @@ export const createPages: GatsbyNode['createPages'] = async ({
       component: DescriptionTemplateComponent,
       context: {
         name,
-        nameList,
+        teamList,
         formSchedule: recruiting.formSchedule,
         procedure: recruiting.procedure,
       },
@@ -269,6 +268,8 @@ export const createPages: GatsbyNode['createPages'] = async ({
   };
 
   queryAllSanityData?.allSanityDepartment.edges.forEach((data) => {
+    if (!data.node.basicInformation.isRecruiting) return;
+
     generateDescriptionPage({
       name: data.node.basicInformation.name,
       recruiting: checkRecruitType(data.node.applyProcedure),

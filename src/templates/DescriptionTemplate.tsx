@@ -49,7 +49,7 @@ interface DescriptionTemplateProps {
   data: SanityDepartmentData;
   pageContext: {
     name: string;
-    nameList: string[];
+    teamList: { name: string; isRecruiting: boolean }[];
     formSchedule: { start: Date | null; end: Date | null } | null;
     procedure:
       | {
@@ -64,7 +64,7 @@ function DescriptionTemplate({
   data: {
     allSanityDepartment: { edges },
   },
-  pageContext: { name, nameList, formSchedule, procedure },
+  pageContext: { name, teamList, formSchedule, procedure },
 }: DescriptionTemplateProps) {
   const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const breakpoints = useBreakpoint();
@@ -109,7 +109,7 @@ function DescriptionTemplate({
                   isApplicationOpen,
                   applyLink: edges[0].node.basicInformation.apply_link,
                 }}
-                teamList={nameList}
+                teamList={teamList}
               />
             )}
           </div>
