@@ -26,6 +26,20 @@ interface QueryResult {
       };
     }[];
   };
+  allSanityRecruitingPage: {
+    nodes: {
+      positions: {
+        cards: {
+          department: {
+            basicInformation: {
+              name: string;
+              isRecruiting: boolean;
+            };
+          };
+        }[];
+      };
+    }[];
+  };
   scheduleWithAssignment: {
     edges: {
       node: {
@@ -82,7 +96,7 @@ export const createPages: GatsbyNode['createPages'] = async ({
 
   const result = await graphql<QueryResult>(`
     {
-      allSanityDepartment(sort: { basicInformation: { key: ASC } }) {
+      allSanityDepartment {
         edges {
           node {
             basicInformation {
@@ -100,6 +114,23 @@ export const createPages: GatsbyNode['createPages'] = async ({
               procedure {
                 step
                 schedule
+              }
+            }
+          }
+        }
+      }
+      allSanityRecruitingPage(
+        filter: { _id: { eq: "recruitingPage" } }
+        limit: 1
+      ) {
+        nodes {
+          positions {
+            cards {
+              department {
+                basicInformation {
+                  name
+                  isRecruiting
+                }
               }
             }
           }
@@ -154,9 +185,10 @@ export const createPages: GatsbyNode['createPages'] = async ({
     'src/templates/DescriptionTemplate.tsx',
   );
 
-  const teamList = queryAllSanityData?.allSanityDepartment.edges.map(
-    (edge) => edge.node.basicInformation,
-  );
+  const teamList =
+    queryAllSanityData?.allSanityRecruitingPage.nodes[0]?.positions.cards.map(
+      ({ department }) => department.basicInformation,
+    ) ?? [];
 
   const checkRecruitType = (recruitTypeData: {
     scheduleWithoutAssignment: boolean;
