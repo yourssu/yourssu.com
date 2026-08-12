@@ -2,6 +2,7 @@ import { GatsbyConfig } from 'gatsby';
 
 require('dotenv').config({
   path: '.env',
+  quiet: true,
 });
 
 const myCustomQueries = {

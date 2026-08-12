@@ -3,7 +3,7 @@ import {
   useScroll,
   AnimatePresence,
   motion,
-} from 'framer-motion';
+} from 'motion/react';
 import { useRef, useState } from 'react';
 
 import missionImage from '@/assets/images/mvc/MISSION.png';

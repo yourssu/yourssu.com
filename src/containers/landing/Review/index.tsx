@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 import ReviewCard from './ReviewCard';
 import { ReviewDataType, REVIEWS_DATA } from './mock';
@@ -10,7 +10,7 @@ export function ReviewCarousel() {
     animate: {
       x: ['0%', '-50%'],
       transition: {
-        ease: 'linear',
+        ease: 'linear' as const,
         duration: 100,
         repeat: Infinity,
       },

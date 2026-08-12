@@ -1,6 +1,9 @@
 packages:
   - studio
 
+overrides:
+  shell-quote: 1.10.0
+
 allowBuilds:
   '@parcel/watcher': true
   core-js: true

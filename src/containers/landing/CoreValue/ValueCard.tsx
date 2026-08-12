@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { useBreakpoint } from 'gatsby-plugin-breakpoints';
 
 import { MVCContent } from './mock';
