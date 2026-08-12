@@ -6,4 +6,7 @@ export default defineCliConfig({
     dataset: 'production',
   },
   studioHost: 'yourssu-page',
+  deployment: {
+    appId: 'b8178fd1f31bf524948e3abe',
+  },
 });

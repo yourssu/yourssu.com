@@ -1,35 +1,41 @@
 import InfoCard from '@/components/Card/InfoCard';
 import RecruitSectionLayout from '@/components/Layout/RecruitSectionLayout';
 import RecruitTitle from '@/components/Title/RecruitTitle';
+import { RecruitingPageData } from '@/types/recruitingPage';
 
-import { IdealProfileIcon } from './icons';
-import { HandIcon } from './icons';
-import { IdealHeartIcon } from './icons';
-import { TrophyIcon } from './icons';
-import { IDEAL_DATAS, IdealDataType } from './mock';
+import {
+  HandIcon,
+  IdealHeartIcon,
+  IdealProfileIcon,
+  TrophyIcon,
+} from './icons';
 
-function Ideal() {
+interface IdealProps {
+  data: RecruitingPageData['ideal'];
+}
+
+const cardIcons = [HandIcon, IdealHeartIcon, TrophyIcon];
+
+function Ideal({ data }: IdealProps) {
   return (
     <RecruitSectionLayout>
       <RecruitTitle
-        title="이런 사람을 지향해요"
-        subtitle="새로운 도전을 재미로 바꾸는 우리들"
+        title={data.header.title}
+        subtitle={data.header.subtitle}
         SVGIconComponent={<IdealProfileIcon />}
       />
 
       <div className="flex gap-5 self-stretch xs:flex-col sm:flex-col md:flex-col">
-        <InfoCard<IdealDataType>
-          idealData={IDEAL_DATAS[0]}
-          SVGIconComponent={<HandIcon />}
-        />
-        <InfoCard<IdealDataType>
-          idealData={IDEAL_DATAS[1]}
-          SVGIconComponent={<IdealHeartIcon />}
-        />
-        <InfoCard<IdealDataType>
-          idealData={IDEAL_DATAS[2]}
-          SVGIconComponent={<TrophyIcon />}
-        />
+        {data.cards.map((card, index) => {
+          const CardIcon = cardIcons[index] ?? TrophyIcon;
+          return (
+            <InfoCard
+              key={card._key}
+              idealData={card}
+              SVGIconComponent={<CardIcon />}
+            />
+          );
+        })}
       </div>
     </RecruitSectionLayout>
   );
