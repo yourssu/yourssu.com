@@ -1,20 +1,24 @@
 import MainTitle from '@/components/Title/MainTitle';
+import { MainPageData } from '@/types/mainPage';
 
 import { CultureCard } from './CultureCard';
-import { CULTURE_DATA } from './mock';
 
-function Culture() {
+interface CultureProps {
+  data: MainPageData['culture'];
+}
+
+function Culture({ data }: CultureProps) {
   return (
     <section className="flex w-full flex-col items-center gap-8 py-20 xs:gap-6 xs:py-10 sm:gap-6 sm:py-10">
-      <MainTitle title="Culture" subTitle="유어슈에서 함께 즐기는 문화" />
+      <MainTitle title={data.title} subTitle={data.subtitle} />
 
       <div className="mb-6 flex flex-col items-center gap-9 xs:gap-4 sm:gap-4">
-        {CULTURE_DATA.map((data: any, index: number) => (
+        {data.items.map((item) => (
           <CultureCard
-            key={index}
-            tagName={data.tagName}
-            title={data.title}
-            description={data.description}
+            key={item._key}
+            tagName={item.tag}
+            title={item.title}
+            description={item.description}
           />
         ))}
       </div>

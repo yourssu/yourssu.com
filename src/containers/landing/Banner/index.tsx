@@ -1,16 +1,19 @@
-import mainCard1 from '../../../assets/images/banner/main-card-1.png';
-import mainCard2 from '../../../assets/images/banner/main-card-2.png';
-import mainCard3 from '../../../assets/images/banner/main-card-3.png';
+import { MainPageData } from '@/types/mainPage';
 
 import { MainCard } from './MainCard';
 
-function Banner() {
+interface BannerProps {
+  data: MainPageData['hero'];
+}
+
+function Banner({ data }: BannerProps) {
   return (
     <div className="flex flex-col items-center gap-[10px] self-stretch pb-20 pt-40 xs:pb-5 xs:pt-[76px] sm:pb-5 sm:pt-[76px]">
       <MainCard
-        images={[mainCard1, mainCard2, mainCard3]}
-        text={`좋아서 몰입하는
-사람들과 함께하세요`}
+        images={data.images.map(({ asset }) => asset.url)}
+        text={data.title}
+        buttonText={data.buttonText}
+        buttonLink={data.buttonLink}
       />
     </div>
   );

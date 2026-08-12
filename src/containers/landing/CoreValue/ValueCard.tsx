@@ -1,10 +1,12 @@
 import { motion } from 'motion/react';
 import { useBreakpoint } from 'gatsby-plugin-breakpoints';
 
-import { MVCContent } from './mock';
+import { MainPageData } from '@/types/mainPage';
+
+type CoreValueItem = MainPageData['coreValue']['items'][number];
 
 interface ValueCardProps {
-  content: MVCContent;
+  content: CoreValueItem;
   isHovered: boolean;
   onMouseEnter: () => void;
 }
@@ -17,11 +19,11 @@ export function ValueCard({
   const breakpoints = useBreakpoint();
   const isMobile = breakpoints.query550;
 
-  const title = isMobile ? content.title.mobile : content.title.desktop;
-  const summary = isMobile ? content.summary.mobile : content.summary.desktop;
+  const title = isMobile ? content.mobileTitle : content.desktopTitle;
+  const summary = content.summary;
   const description = isMobile
-    ? content.description.mobile
-    : content.description.desktop;
+    ? content.mobileDescription
+    : content.desktopDescription;
 
   return (
     <motion.div
@@ -31,7 +33,7 @@ export function ValueCard({
       {/* 1. 배경 이미지 (고정) */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-transform duration-500"
-        style={{ backgroundImage: `url(${content.bgImageUrl})` }}
+        style={{ backgroundImage: `url(${content.image.asset.url})` }}
       />
 
       {/* 2. 앞면 (isHovered가 아닐 때만 노출) */}

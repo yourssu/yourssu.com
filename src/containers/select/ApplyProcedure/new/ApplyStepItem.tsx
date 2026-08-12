@@ -1,12 +1,10 @@
 import InfoCard from '@/components/Card/InfoCard';
 
 import ApplyTaskChip from './ApplyTaskChip';
-import { ApplyProcessDataType } from './mock';
-
 interface ApplyStepItemProps {
   chips: { icon: React.ReactNode; title: string }[];
   cardIcon: React.ReactNode;
-  data: ApplyProcessDataType;
+  data: { title: string; description: string };
 }
 
 function ApplyStepItem({ chips, cardIcon, data }: ApplyStepItemProps) {
@@ -23,7 +21,7 @@ function ApplyStepItem({ chips, cardIcon, data }: ApplyStepItemProps) {
         ))}
       </div>
 
-      <InfoCard<ApplyProcessDataType>
+      <InfoCard
         SVGIconComponent={cardIcon}
         idealData={data}
         className="flex-1"

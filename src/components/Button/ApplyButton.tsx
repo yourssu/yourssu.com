@@ -1,22 +1,23 @@
 interface ApplyButtonProps {
   link: string;
-  isRecruiting: boolean;
+  isApplicationOpen: boolean;
 }
 
-function ApplyButton({ link, isRecruiting }: ApplyButtonProps) {
-  // 링크가 없을 때, 지원 기간이 아닐 때, 리쿠르팅을 하지 않을 때 비활성화
-  const active = link && isRecruiting;
-  const content = active ? '지원하기' : '지원 기간이 아닙니다';
+function ApplyButton({ link, isApplicationOpen }: ApplyButtonProps) {
+  const active = Boolean(link && isApplicationOpen);
+  const className = `${active ? 'active' : ''} B1_Sb_16 inline-flex h-12 items-center justify-center gap-1 self-stretch rounded-[16px] bg-[#6B5CFF] px-5 text-[#FFFFFF]`;
 
-  return (
+  return active ? (
     <a
       href={link}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${active && 'active'} B1_Sb_16 inline-flex h-12 items-center justify-center gap-1 self-stretch rounded-[16px] bg-[#6B5CFF] px-5 text-[#FFFFFF]`}
+      className={className}
     >
-      {content}
+      지원하기
     </a>
+  ) : (
+    <span className={className}>지원 기간이 아닙니다</span>
   );
 }
 

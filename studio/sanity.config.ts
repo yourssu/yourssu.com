@@ -3,6 +3,7 @@ import { structureTool } from 'sanity/structure';
 import { visionTool } from '@sanity/vision';
 //import {googleMapsInput} from '@sanity/google-maps-input'
 import { schemaTypes } from './schemas';
+import { structure } from './structure';
 
 export default defineConfig({
   name: 'default',
@@ -12,7 +13,7 @@ export default defineConfig({
   dataset: 'production',
 
   plugins: [
-    structureTool(),
+    structureTool({ structure }),
     visionTool(),
     //googleMapsInput(),
   ],

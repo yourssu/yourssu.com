@@ -1,12 +1,16 @@
 import { useRef, useState, useEffect } from 'react';
 
 import MainTitle from '@/components/Title/MainTitle';
+import { MainPageData } from '@/types/mainPage';
 
 import { ProductCard } from './ProductCard';
 import { ArrowLeftIcon, ArrowRightIcon } from './arrowIcons';
-import { products } from './mocks';
 
-function Product() {
+interface ProductProps {
+  data: MainPageData['product'];
+}
+
+function Product({ data }: ProductProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsInView, setItemsInView] = useState(3);
@@ -35,7 +39,7 @@ function Product() {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const maxPage = Math.ceil(products.length / itemsInView) - 1;
+      const maxPage = Math.ceil(data.items.length / itemsInView) - 1;
       let nextPage =
         direction === 'left'
           ? Math.max(0, currentPage - 1)
@@ -53,7 +57,7 @@ function Product() {
   };
 
   const remaining =
-    (itemsInView - (products.length % itemsInView)) % itemsInView;
+    (itemsInView - (data.items.length % itemsInView)) % itemsInView;
 
   return (
     <section className="mx-auto flex w-full flex-col py-20 xs:py-10 sm:py-10">
@@ -61,8 +65,8 @@ function Product() {
         <div className="flex flex-col gap-9 transition-all duration-300 xs:gap-6 sm:gap-6">
           {/* 헤더 영역: 컨테이너 너비에 맞춰 정렬됨 */}
           <MainTitle
-            title="Product"
-            subTitle="함께 몰입한 결과물"
+            title={data.title}
+            subTitle={data.subtitle}
             rightElement={
               <div className="border-line-basic-medium flex h-12 w-[90px] items-center justify-center gap-7 rounded-[29px] border px-[9px] py-2 xs:h-8 xs:w-[60px] xs:gap-[18.667px] xs:px-[6px] xs:py-[5.333px] sm:h-8 sm:w-[60px] sm:gap-[18.667px] sm:px-[6px] sm:py-[5.333px]">
                 <button onClick={() => scroll('left')}>
@@ -81,10 +85,14 @@ function Product() {
               ref={scrollRef}
               className="scrollbar-hide flex gap-6 overflow-x-hidden"
             >
-              {products.map((product) => (
-                <div key={product.id} className="w-[332px] flex-shrink-0">
-                  <a href={product.serviceUrl} target="_blank" rel="noreferrer">
-                    <ProductCard {...product} />
+              {data.items.map((product) => (
+                <div key={product._key} className="w-[332px] flex-shrink-0">
+                  <a href={product.link} target="_blank" rel="noreferrer">
+                    <ProductCard
+                      title={product.title}
+                      description={product.description}
+                      imageUrl={product.image.asset.url}
+                    />
                   </a>
                 </div>
               ))}

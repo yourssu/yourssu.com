@@ -2,43 +2,77 @@ import { Link } from 'gatsby';
 
 import RecruitSectionLayout from '@/components/Layout/RecruitSectionLayout';
 import RecruitTitle from '@/components/Title/RecruitTitle';
+import { RecruitingPageData } from '@/types/recruitingPage';
 
-import { HandsUpPeopleIcon } from './icons';
-import { POSITIONS_DATA } from './mock';
+import {
+  AndroidIcon,
+  BackEndIcon,
+  DesigPaletteIcon,
+  FrontEndIcon,
+  HandsUpPeopleIcon,
+  HRIcon,
+  IOSIcon,
+  LegalIcon,
+  MarketingIcon,
+  ProductManagerIcon,
+} from './icons';
 
-function Supporting() {
+interface SupportingProps {
+  data: RecruitingPageData['positions'];
+}
+
+const icons = {
+  'Product Manager': ProductManagerIcon,
+  'Product Designer': DesigPaletteIcon,
+  Marketer: MarketingIcon,
+  'iOS Engineer': IOSIcon,
+  'Android Engineer': AndroidIcon,
+  'HR Partner': HRIcon,
+  'Frontend Engineer': FrontEndIcon,
+  'Backend Engineer': BackEndIcon,
+  'Legal Partner': LegalIcon,
+};
+
+function Supporting({ data }: SupportingProps) {
   return (
     <RecruitSectionLayout>
       <RecruitTitle
-        title="8개의 팀에서 합류를 기다리고 있어요"
-        subtitle="완벽하지 않아도 괜찮아요"
+        title={data.header.title}
+        subtitle={data.header.subtitle}
         SVGIconComponent={<HandsUpPeopleIcon />}
       />
 
       <div className="grid grid-cols-3 gap-5 xs:grid-cols-1 sm:grid-cols-1 md:grid-cols-2">
-        {POSITIONS_DATA.map(({ title, IconComponent, value, isRecruiting }) =>
-          isRecruiting ? (
+        {data.cards.map(({ _key, department }) => {
+          const { icon, isRecruiting, name } = department.basicInformation;
+          const IconComponent = icons[name as keyof typeof icons];
+
+          return isRecruiting ? (
             <Link
-              to={value}
-              key={title}
+              to={name.toLowerCase().replaceAll(' ', '_')}
+              key={_key}
               className="flex items-center justify-between rounded-[0.75rem] border border-line-basicLight p-6 xs:p-5 sm:p-5"
             >
               <h3 className="whitespace-pre-wrap text-2xl font-semibold text-text-basicSecondary">
-                {title}
+                {name.replace(' ', '\n')}
               </h3>
-              <IconComponent />
+              {IconComponent ? (
+                <IconComponent />
+              ) : (
+                <img src={icon.asset.url} alt="" className="h-14 w-14" />
+              )}
             </Link>
           ) : (
             <div
-              key={title}
+              key={_key}
               className="flex cursor-not-allowed items-center justify-between rounded-[0.75rem] border border-line-basicLight p-6 xs:p-5 sm:p-5"
             >
               <h3 className="whitespace-pre-wrap text-2xl font-semibold text-text-basicDisabled">
-                {title}
+                {name.replace(' ', '\n')}
               </h3>
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
     </RecruitSectionLayout>
   );

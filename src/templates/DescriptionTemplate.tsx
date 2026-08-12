@@ -49,7 +49,7 @@ interface DescriptionTemplateProps {
   data: SanityDepartmentData;
   pageContext: {
     name: string;
-    nameList: string[];
+    teamList: { name: string; isRecruiting: boolean }[];
     formSchedule: { start: Date | null; end: Date | null } | null;
     procedure:
       | {
@@ -64,15 +64,14 @@ function DescriptionTemplate({
   data: {
     allSanityDepartment: { edges },
   },
-  pageContext: { name, nameList, formSchedule, procedure },
+  pageContext: { name, teamList, formSchedule, procedure },
 }: DescriptionTemplateProps) {
-  const [isRecruiting, setIsRecruiting] = useState(false);
+  const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const breakpoints = useBreakpoint();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && formSchedule) {
-      const recruiting = isTodayInRange(formSchedule);
-      setIsRecruiting(recruiting);
+      setIsApplicationOpen(isTodayInRange(formSchedule));
     }
   }, [formSchedule]);
 
@@ -107,10 +106,10 @@ function DescriptionTemplate({
               <SideNavigation
                 currentTeam={{
                   name,
-                  isRecruiting,
+                  isApplicationOpen,
                   applyLink: edges[0].node.basicInformation.apply_link,
                 }}
-                teamList={nameList}
+                teamList={teamList}
               />
             )}
           </div>
@@ -121,7 +120,7 @@ function DescriptionTemplate({
         <div className="sticky bottom-0 z-50 flex w-full flex-col gap-3 bg-gradient-to-t from-white-0 from-80% to-transparent p-5">
           <ApplyButton
             link={edges[0].node.basicInformation.apply_link}
-            isRecruiting={isRecruiting}
+            isApplicationOpen={isApplicationOpen}
           />
           <div className="body8 flex flex-row-reverse gap-2 text-gray1-0">
             <Link

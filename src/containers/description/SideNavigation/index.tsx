@@ -11,10 +11,10 @@ const KAKAO_LINK = 'http://pf.kakao.com/_AxfrxeT';
 interface SideNavigationProps {
   currentTeam: {
     name: string;
-    isRecruiting: boolean;
+    isApplicationOpen: boolean;
     applyLink: string;
   };
-  teamList: string[];
+  teamList: { name: string; isRecruiting: boolean }[];
 }
 
 function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
@@ -25,26 +25,34 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
       <NavigationContainer>
         <h2 className="T3_Sb_20">TEAM</h2>
         <NavigationList>
-          {teamList.map((team) => {
-            const isDisabled = team === 'Legal Partner';
-            const isActive = currentTeam.name === team;
-            return (
+          {teamList.map(({ name, isRecruiting }) => {
+            const isActive = currentTeam.name === name;
+            const content = (
+              <>
+                <ArrowLeft isActive={isActive} isDisabled={!isRecruiting} />
+                <div>{name}</div>
+              </>
+            );
+
+            return isRecruiting ? (
               <NavigationItem
-                to={`/recruiting/${team.toLowerCase().replaceAll(' ', '_')}`}
-                key={team}
+                to={`/recruiting/${name.toLowerCase().replaceAll(' ', '_')}`}
+                key={name}
                 $active={isActive}
-                $disabled={isDisabled}
               >
-                <ArrowLeft isActive={isActive} isDisabled={isDisabled} />
-                <div>{team}</div>
+                {content}
               </NavigationItem>
+            ) : (
+              <DisabledNavigationItem key={name} aria-disabled="true">
+                {content}
+              </DisabledNavigationItem>
             );
           })}
         </NavigationList>
       </NavigationContainer>
       <ApplyButton
         link={currentTeam.applyLink}
-        isRecruiting={currentTeam.isRecruiting}
+        isApplicationOpen={currentTeam.isApplicationOpen}
       />
       <div className="flex w-full gap-5">
         <Link
@@ -101,7 +109,7 @@ const NavigationList = tw.div`
   gap-[10px]
 `;
 
-const NavigationItem = tw(Link)<{ $active: boolean; $disabled: boolean }>`
+const NavigationItem = tw(Link)<{ $active: boolean }>`
   flex
   justify-between
   items-center
@@ -112,5 +120,17 @@ const NavigationItem = tw(Link)<{ $active: boolean; $disabled: boolean }>`
   ${(props) => (props.$active ? 'B1_Sb_16' : 'B1_Lt_16')}
   ${(props) => (props.$active ? 'bg-bluegray4-0' : 'bg-white-0')}
   ${(props) => (props.$active ? 'text-[#25262C]' : 'text-[#6E7687]')}
-  ${(props) => props.$disabled && 'text-text-basicDisabled pointer-events-none'}
+`;
+
+const DisabledNavigationItem = tw.div`
+  flex
+  justify-between
+  items-center
+  rounded-[30px]
+  w-full
+  px-[18px]
+  py-3
+  B1_Lt_16
+  cursor-not-allowed
+  text-text-basicDisabled
 `;

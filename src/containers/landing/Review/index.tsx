@@ -1,11 +1,15 @@
 import { motion } from 'motion/react';
 
+import { MainPageData } from '@/types/mainPage';
+
 import ReviewCard from './ReviewCard';
-import { ReviewDataType, REVIEWS_DATA } from './mock';
 
-const doubledReviews: ReviewDataType[] = [...REVIEWS_DATA, ...REVIEWS_DATA];
+interface ReviewCarouselProps {
+  data: MainPageData['reviews'];
+}
 
-export function ReviewCarousel() {
+export function ReviewCarousel({ data }: ReviewCarouselProps) {
+  const doubledReviews = [...data, ...data];
   const carouselVariants = {
     animate: {
       x: ['0%', '-50%'],
@@ -26,7 +30,7 @@ export function ReviewCarousel() {
           animate="animate"
         >
           {doubledReviews.map((review, index) => (
-            <div key={index} className="flex-shrink-0 px-4">
+            <div key={`${review._key}-${index}`} className="flex-shrink-0 px-4">
               <ReviewCard reviewData={review} />
             </div>
           ))}
