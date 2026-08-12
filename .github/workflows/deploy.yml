@@ -34,8 +34,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Clean Gatsby build
-        run: pnpm gatsby clean
+        run: pnpm clean
 
       - name: Generate Environment Variables File for Production
         run: |
@@ -52,7 +58,7 @@ jobs:
           GATSBY_APP_GA_ID: ${{ secrets.GATSBY_APP_GA_ID }}
 
       - name: Build application
-        run: pnpm gatsby build
+        run: pnpm build
 
       - name: Configure AWS credentials
         # v6.2.3
@@ -63,5 +69,5 @@ jobs:
           role-session-name: GitHubActions-${{ github.run_id }}
           aws-region: ap-northeast-2
 
-      - name: Deploy to S3 using gatsby-plugin-s3
-        run: pnpm gatsby-plugin-s3 deploy --yes
+      - name: Deploy to S3
+        run: pnpm deploy

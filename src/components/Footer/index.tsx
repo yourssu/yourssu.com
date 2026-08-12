@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import tw from 'tailwind-styled-components';
 
 import githubIcon from '@/assets/socials/github.svg';
@@ -6,26 +5,24 @@ import instagramIcon from '@/assets/socials/instagram.svg';
 import kakaotalkIcon from '@/assets/socials/kakaotalk.svg';
 import mediumIcon from '@/assets/socials/medium.svg';
 
-import useFooterDetail from './hook';
-
 interface Props {
   backgroundColor: string;
 }
 
 function Footer({ backgroundColor }: Props) {
-  const { link } = useFooterDetail();
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const socialData = [
-    { name: 'kakaotalk', icon: kakaotalkIcon },
-    { name: 'github', icon: githubIcon },
-    { name: 'instagram', icon: instagramIcon },
-    { name: 'medium', icon: mediumIcon },
+    {
+      name: 'kakaotalk',
+      icon: kakaotalkIcon,
+      href: 'http://pf.kakao.com/_AxfrxeT',
+    },
+    { name: 'github', icon: githubIcon, href: 'https://github.com/yourssu' },
+    {
+      name: 'instagram',
+      icon: instagramIcon,
+      href: 'https://www.instagram.com/yourssu_official',
+    },
+    { name: 'medium', icon: mediumIcon, href: 'https://medium.com/yourssu' },
   ];
 
   const background: { [key: string]: string } = {
@@ -40,19 +37,16 @@ function Footer({ backgroundColor }: Props) {
           <Logo>YOURSSU</Logo>
         </LogoContainer>
         <div className="mb-2 flex items-center gap-[12px]">
-          {isMounted &&
-            socialData.map((item) => (
-              <React.Fragment key={item.name}>
-                <a
-                  className="flex h-12 w-12 items-center justify-center gap-[10px] rounded-[16px] bg-bg-basicLight"
-                  href={link[item.name]}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img src={item.icon} alt={item.name} />
-                </a>
-              </React.Fragment>
-            ))}
+          {socialData.map((item) => (
+            <SocialLink
+              key={item.name}
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src={item.icon} alt={item.name} />
+            </SocialLink>
+          ))}
         </div>
         <InfoContainer>
           <div className="py-[3px] xs:py-[2px]">
@@ -78,6 +72,17 @@ const Container = tw.footer<{ $bg: string }>`
   sm:px-4
   px-[120px]
   ${(props) => props.$bg}
+`;
+
+const SocialLink = tw.a`
+  flex
+  h-12
+  w-12
+  items-center
+  justify-center
+  gap-[10px]
+  rounded-[16px]
+  bg-bg-basicLight
 `;
 
 const LogoContainer = tw.div`
