@@ -1,13 +1,25 @@
-import RecruitmentBanner from './RecruitBanner';
-import { RECRUIT_DATA } from './mock';
+import { MainPageData } from '@/types/mainPage';
 
-function ToRecruit() {
+import RecruitmentBanner from './RecruitBanner';
+
+interface ToRecruitProps {
+  data: MainPageData['recruit'];
+}
+
+function ToRecruit({ data }: ToRecruitProps) {
   return (
     <section className="-mx-5 w-[calc(100%+40px)] xs:pb-10 sm:pb-10">
       <RecruitmentBanner
-        imageUrl={RECRUIT_DATA.imageUrl}
-        recruitTitle={RECRUIT_DATA.recruitTitle}
-        buttonText={RECRUIT_DATA.buttonText}
+        imageUrl={data.image.asset.url}
+        recruitTitle={{
+          desktop: data.desktopTitle,
+          mobile: data.mobileTitle,
+        }}
+        buttonText={{
+          desktop: data.desktopButtonText,
+          mobile: data.mobileButtonText,
+        }}
+        buttonLink={data.buttonLink}
       />
     </section>
   );

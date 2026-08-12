@@ -1,8 +1,8 @@
 import { ProfileIcon } from './icons';
-import { ReviewDataType } from './mock';
+import { MainPageData } from '@/types/mainPage';
 
 interface ReviewCardProps {
-  reviewData: ReviewDataType;
+  reviewData: MainPageData['reviews'][number];
 }
 
 function ReviewCard({ reviewData }: ReviewCardProps) {

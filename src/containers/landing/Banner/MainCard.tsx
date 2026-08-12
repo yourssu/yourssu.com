@@ -4,11 +4,18 @@ import { useState, useEffect } from 'react';
 import { BoxButton } from '@/components/Button/BoxButton';
 
 interface MainCardProps {
-  images: string[]; // 이미지 경로 배열
+  images: string[];
   text: string;
+  buttonText: string;
+  buttonLink: string;
 }
 
-export function MainCard({ images, text }: MainCardProps) {
+export function MainCard({
+  images,
+  text,
+  buttonText,
+  buttonLink,
+}: MainCardProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // 3초마다 인덱스 변경
@@ -42,13 +49,12 @@ export function MainCard({ images, text }: MainCardProps) {
       ))}
       <div className="bg-black/30 absolute inset-0" />
       <div className="relative z-10 flex h-full flex-col items-start justify-between text-left">
-        <span
-          className="H1_Sb_32 sm:T1_Sb_20 xs:T1_Sb_20 whitespace-pre-line text-text-basicWhite"
-          dangerouslySetInnerHTML={{ __html: text }}
-        />
+        <span className="H1_Sb_32 sm:T1_Sb_20 xs:T1_Sb_20 whitespace-pre-line text-text-basicWhite">
+          {text}
+        </span>
         <div className="self-end">
-          <BoxButton onClick={() => navigate('/recruiting')}>
-            채용 포지션 보기
+          <BoxButton onClick={() => navigate(buttonLink)}>
+            {buttonText}
           </BoxButton>
         </div>
       </div>

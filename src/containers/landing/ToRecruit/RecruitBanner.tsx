@@ -12,12 +12,14 @@ interface RecruitmentBannerProps {
     desktop: string;
     mobile: string;
   };
+  buttonLink: string;
 }
 
 function RecruitmentBanner({
   imageUrl,
   recruitTitle,
   buttonText,
+  buttonLink,
 }: RecruitmentBannerProps) {
   return (
     <div
@@ -43,7 +45,7 @@ function RecruitmentBanner({
 
       {/* 버튼 영역 */}
       <div className="relative">
-        <BoxButton onClick={() => navigate('/recruiting')}>
+        <BoxButton onClick={() => navigate(buttonLink)}>
           <span className="block xs:hidden sm:hidden">
             {buttonText.desktop}
           </span>

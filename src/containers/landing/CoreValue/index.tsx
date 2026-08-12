@@ -2,11 +2,15 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 
 import MainTitle from '@/components/Title/MainTitle';
+import { MainPageData } from '@/types/mainPage';
 
 import { ValueCard } from './ValueCard';
-import { mvcData } from './mock';
 
-function CoreValue() {
+interface CoreValueProps {
+  data: MainPageData['coreValue'];
+}
+
+function CoreValue({ data }: CoreValueProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
@@ -23,18 +27,15 @@ function CoreValue() {
         )}
       </AnimatePresence>
 
-      <MainTitle
-        title="Core Value"
-        subTitle="유어슈가 중요하게 생각하는 것들"
-      />
+      <MainTitle title={data.title} subTitle={data.subtitle} />
 
       <div
         className="relative flex flex-wrap justify-center gap-4 xs:w-full xs:gap-2 sm:w-full sm:gap-2 md:w-[700px]"
         onMouseLeave={() => setHoveredIndex(null)}
       >
-        {mvcData.map((content, index) => (
+        {data.items.map((content, index) => (
           <ValueCard
-            key={content.id}
+            key={content._key}
             content={content}
             isHovered={hoveredIndex === index}
             onMouseEnter={() => setHoveredIndex(index)}
