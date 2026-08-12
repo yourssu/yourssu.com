@@ -2,7 +2,6 @@ import { graphql } from 'gatsby';
 
 import Layout from '@/components/Layout';
 import Seo from '@/components/Seo';
-// import About from '@/containers/select/About';
 import ApplyProcess from '@/containers/select/ApplyProcedure/new';
 import RecruitBanner from '@/containers/select/Banner/new';
 import FAQ from '@/containers/select/FAQ';
@@ -16,7 +15,6 @@ function Recruiting() {
         <RecruitBanner />
         <Supporting />
         <Ideal />
-        {/*<About />*/}
         <ApplyProcess />
         <FAQ />
       </div>
