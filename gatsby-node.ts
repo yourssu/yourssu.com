@@ -1,29 +1,15 @@
 import { type GatsbyNode } from 'gatsby';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import recruitingSchedule from './src/utils/recruitingSchedule';
+import recruitingSchedule, {
+  type RecruitingDepartmentReference,
+  type RecruitingScheduleDocument,
+  validateRecruitingSchedule,
+} from './src/utils/recruitingSchedule';
 
 interface QueryResult {
   allSanityDepartment: {
     edges: {
-      node: {
-        basicInformation: {
-          name: string;
-          isRecruiting: boolean;
-        };
-        applyProcedure: {
-          scheduleWithoutAssignment: boolean;
-          scheduleWithAssignment: boolean;
-          individualSchedule: boolean;
-          formSchedule: {
-            start: Date;
-            end: Date;
-          };
-          procedure: {
-            step: string;
-            schedule: string;
-          }[];
-        };
-      };
+      node: RecruitingDepartmentReference;
     }[];
   };
   allSanityRecruitingPage: {
@@ -40,35 +26,8 @@ interface QueryResult {
       };
     }[];
   };
-  scheduleWithAssignment: {
-    edges: {
-      node: {
-        title: string;
-        formSchedule: {
-          start: Date;
-          end: Date;
-        };
-        procedure: {
-          step: string;
-          schedule: string;
-        }[];
-      };
-    }[];
-  };
-  scheduleWithoutAssignment: {
-    edges: {
-      node: {
-        title: string;
-        formSchedule: {
-          start: Date;
-          end: Date;
-        };
-        procedure: {
-          step: string;
-          schedule: string;
-        }[];
-      };
-    }[];
+  allSanityRecruitingSchedule: {
+    nodes: RecruitingScheduleDocument[];
   };
 }
 
@@ -99,22 +58,10 @@ export const createPages: GatsbyNode['createPages'] = async ({
       allSanityDepartment {
         edges {
           node {
+            _id
             basicInformation {
               name
               isRecruiting
-            }
-            applyProcedure {
-              scheduleWithoutAssignment
-              scheduleWithAssignment
-              individualSchedule
-              formSchedule {
-                start
-                end
-              }
-              procedure {
-                step
-                schedule
-              }
             }
           }
         }
@@ -136,12 +83,19 @@ export const createPages: GatsbyNode['createPages'] = async ({
           }
         }
       }
-      scheduleWithAssignment: allSanityRecruitingSchedule(
-        filter: { title: { regex: "/과제 O$/" } }
-      ) {
-        edges {
-          node {
-            title
+      allSanityRecruitingSchedule(filter: { isActive: { eq: true } }) {
+        nodes {
+          _id
+          title
+          isActive
+          withAssignment {
+            departments {
+              _id
+              basicInformation {
+                name
+                isRecruiting
+              }
+            }
             formSchedule {
               start
               end
@@ -149,16 +103,33 @@ export const createPages: GatsbyNode['createPages'] = async ({
             procedure {
               step
               schedule
+            }
+            departmentOverrides {
+              department {
+                _id
+                basicInformation {
+                  name
+                  isRecruiting
+                }
+              }
+              formSchedule {
+                start
+                end
+              }
+              procedure {
+                step
+                schedule
+              }
             }
           }
-        }
-      }
-      scheduleWithoutAssignment: allSanityRecruitingSchedule(
-        filter: { title: { regex: "/과제 X$/" } }
-      ) {
-        edges {
-          node {
-            title
+          withoutAssignment {
+            departments {
+              _id
+              basicInformation {
+                name
+                isRecruiting
+              }
+            }
             formSchedule {
               start
               end
@@ -166,6 +137,23 @@ export const createPages: GatsbyNode['createPages'] = async ({
             procedure {
               step
               schedule
+            }
+            departmentOverrides {
+              department {
+                _id
+                basicInformation {
+                  name
+                  isRecruiting
+                }
+              }
+              formSchedule {
+                start
+                end
+              }
+              procedure {
+                step
+                schedule
+              }
             }
           }
         }
@@ -179,6 +167,26 @@ export const createPages: GatsbyNode['createPages'] = async ({
   }
 
   const queryAllSanityData = result.data;
+  if (!queryAllSanityData) {
+    reporter.panicOnBuild(`Sanity query returned no data`);
+    return;
+  }
+
+  const schedules = queryAllSanityData.allSanityRecruitingSchedule.nodes;
+  if (schedules.length !== 1) {
+    reporter.panicOnBuild(
+      `Expected exactly one active recruiting schedule, found ${schedules.length}`,
+    );
+    return;
+  }
+
+  const schedule = schedules[0];
+  const knownDepartmentIds = new Set(
+    queryAllSanityData.allSanityDepartment.edges
+      .map(({ node }) => node._id)
+      .filter((id): id is string => Boolean(id)),
+  );
+  validateRecruitingSchedule(schedule, knownDepartmentIds);
 
   const DescriptionTemplateComponent = path.resolve(
     __dirname,
@@ -186,106 +194,23 @@ export const createPages: GatsbyNode['createPages'] = async ({
   );
 
   const teamList =
-    queryAllSanityData?.allSanityRecruitingPage.nodes[0]?.positions.cards.map(
+    queryAllSanityData.allSanityRecruitingPage.nodes[0]?.positions.cards.map(
       ({ department }) => department.basicInformation,
     ) ?? [];
 
-  const checkRecruitType = (recruitTypeData: {
-    scheduleWithoutAssignment: boolean;
-    scheduleWithAssignment: boolean;
-    individualSchedule: boolean;
-    formSchedule: {
-      start: Date;
-      end: Date;
-    };
-    procedure: {
-      step: string;
-      schedule: string;
-    }[];
-  }): {
-    formSchedule: { start: Date | null; end: Date | null } | null;
-    procedure: { step: string; schedule: string }[] | null;
-  } => {
-    const {
-      scheduleWithoutAssignment,
-      scheduleWithAssignment,
-      individualSchedule,
-      formSchedule,
-      procedure,
-    } = recruitTypeData;
-
-    const recruitingType = {
-      individualSchedule,
-      scheduleWithAssignment,
-      scheduleWithoutAssignment,
-    };
-
-    const scheduleWithAssignmentData =
-      queryAllSanityData?.scheduleWithAssignment?.edges[0]?.node.formSchedule ||
-      null;
-    const scheduleWithoutAssignmentData =
-      queryAllSanityData?.scheduleWithoutAssignment?.edges[0]?.node
-        .formSchedule || null;
-    const scheduleIndividualData = formSchedule || null;
-
-    const recruitingScheduleData = recruitingSchedule({
-      recruitingType,
-      scheduleWithAssignmentData,
-      scheduleWithoutAssignmentData,
-      scheduleIndividualData,
-    });
-
-    if (!recruitingScheduleData) {
-      return {
-        formSchedule: null,
-        procedure: null,
-      };
+  const generateDescriptionPage = (
+    department: RecruitingDepartmentReference,
+  ) => {
+    const name = department.basicInformation?.name;
+    if (!name) {
+      reporter.panicOnBuild('Recruiting department is missing its name');
+      return;
     }
 
-    if (recruitingScheduleData.type === 'individual') {
-      return {
-        formSchedule: recruitingScheduleData.formSchedule,
-        procedure: procedure,
-      };
-    }
-
-    if (recruitingScheduleData.type === 'withAssignment') {
-      return {
-        formSchedule: recruitingScheduleData.formSchedule,
-        procedure:
-          queryAllSanityData?.scheduleWithAssignment?.edges[0]?.node
-            .procedure || [],
-      };
-    }
-
-    if (recruitingScheduleData.type === 'withoutAssignment') {
-      return {
-        formSchedule: recruitingScheduleData.formSchedule,
-        procedure:
-          queryAllSanityData?.scheduleWithoutAssignment?.edges[0]?.node
-            .procedure || [],
-      };
-    }
-
-    return {
-      formSchedule: null,
-      procedure: null,
-    };
-  };
-
-  const generateDescriptionPage = ({
-    name,
-    recruiting,
-  }: {
-    name: string;
-    recruiting: {
-      formSchedule: { start: Date | null; end: Date | null } | null;
-      procedure: { step: string; schedule: string }[] | null;
-    };
-  }) => {
+    const recruiting = recruitingSchedule(schedule, department);
     const pathName = name.toLowerCase().replaceAll(' ', '_');
 
-    const pageOptions = {
+    createPage({
       path: `recruiting/${pathName}`,
       component: DescriptionTemplateComponent,
       context: {
@@ -294,18 +219,12 @@ export const createPages: GatsbyNode['createPages'] = async ({
         formSchedule: recruiting.formSchedule,
         procedure: recruiting.procedure,
       },
-    };
-
-    createPage(pageOptions);
+    });
   };
 
-  queryAllSanityData?.allSanityDepartment.edges.forEach((data) => {
-    if (!data.node.basicInformation.isRecruiting) return;
-
-    generateDescriptionPage({
-      name: data.node.basicInformation.name,
-      recruiting: checkRecruitType(data.node.applyProcedure),
-    });
+  queryAllSanityData.allSanityDepartment.edges.forEach(({ node }) => {
+    if (!node.basicInformation?.isRecruiting) return;
+    generateDescriptionPage(node);
   });
 };
 
