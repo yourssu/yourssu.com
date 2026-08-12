@@ -1,14 +1,8 @@
 name: deploy-studio
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - 'studio/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.github/workflows/studio-deploy.yml'
-  workflow_dispatch:
+  release:
+    types: [published]
 
 concurrency:
   group: deploy-sanity-studio
@@ -17,6 +11,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://yourssu-page.sanity.studio
     permissions:
       contents: read
     steps:
@@ -24,6 +21,7 @@ jobs:
         # v6.0.2
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
+          ref: ${{ github.event.release.tag_name }}
           persist-credentials: false
 
       - name: Setup pnpm
@@ -35,7 +33,7 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24.15.0
-          cache: pnpm
+          package-manager-cache: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

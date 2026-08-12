@@ -1,23 +1,47 @@
 name: build-and-deploy
 
 on:
-  push:
-    branches: [master]
+  release:
+    types: [published]
   repository_dispatch:
     types: [sanity-content-update]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://yourssu.com
     permissions:
       contents: read
       id-token: write
     steps:
+      - name: Resolve deployment tag
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "repository_dispatch" ]]; then
+            tag="$(
+              gh api "repos/$GITHUB_REPOSITORY/releases/latest" \
+                --jq '.tag_name'
+            )"
+          else
+            tag="$RELEASE_TAG"
+          fi
+          echo "Deploying $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Checkout source code
         # v6.0.2
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: master
+          ref: ${{ steps.deployment.outputs.tag }}
           persist-credentials: false
 
       - name: Setup pnpm
@@ -29,7 +53,7 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24.15.0
-          cache: 'pnpm'
+          package-manager-cache: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
