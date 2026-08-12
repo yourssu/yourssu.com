@@ -116,7 +116,15 @@ pnpm --dir studio exec sanity schemas deploy --workspace default
 pnpm --dir studio exec sanity deploy --yes
 ```
 
-`schemas deploy`는 dry-run flag가 없는 설치 버전의 schema-store write 명령이므로 반드시 별도 승인 후 실행한다. GraphQL API 정의를 이번 릴리스에서 바꾸지 않는다면 GraphQL deploy는 생략한다. 바뀐다면 먼저 다음 검증을 하고 breaking-change 승인 후 별도 배포한다.
+`schemas deploy`는 dry-run flag가 없는 설치 버전의 schema-store write 명령이므로 반드시 별도 승인 후 실행한다. GraphQL API 호환성 dry-run과 실제 GraphQL deploy는 release workflow가 담당한다. release에서는 다음 순서를 지킨다.
+
+1. GraphQL compatibility dry-run
+2. `sanity graphql deploy --force`
+3. lint/typecheck/환경 파일 생성/Gatsby build
+4. S3 deploy
+5. Studio deploy
+
+release workflow의 GraphQL/Studio deploy 단계는 모두 `release` event에만 실행된다. `repository_dispatch` (`sanity-content-update`)는 두 deploy를 시도하지 않으므로, cutover maintenance gate에서는 GraphQL dry-run부터 S3/Studio 완료까지 content-update dispatch와 editor write를 멈추고 release 완료를 확인한 뒤 재개한다. build가 실패하면 normal step failure로 S3와 Studio 단계도 실행되지 않는다. 호환성 확인만 별도로 하려면 다음 read-only dry-run을 사용한다.
 
 ```bash
 pnpm --dir studio exec sanity graphql deploy \
@@ -167,13 +175,13 @@ curl --fail --silent --show-error \
   http://127.0.0.1:9000/recruiting/<verified-department-path>/ >/dev/null
 ```
 
-승인된 deploy command는 기존 repository 절차를 사용한다.
+승인된 release deploy는 기존 GitHub Actions workflow를 사용한다. workflow는 GraphQL compatibility dry-run과 실제 GraphQL deploy를 먼저 끝낸 뒤 checks/env/Gatsby build를 실행하고, build 성공 시에만 S3를 deploy한 다음 Studio를 deploy한다. S3 단계의 기존 command는 다음과 같다.
 
 ```bash
 pnpm deploy
 ```
 
-배포 후 production page에서 모집 일정/지원 절차/individual override를 확인하고, Sanity에서도 exact ID를 read-only query한다. 실패하면 cleanup을 실행하지 않고 previous Gatsby release로 되돌린다.
+`repository_dispatch` content-update run은 GraphQL/Studio deploy 없이 checks/build/S3만 수행하므로, cutover 중에는 section 4의 maintenance gate로 dispatch를 멈춘다. 배포 후 production page에서 모집 일정/지원 절차/individual override를 확인하고, Sanity에서도 exact ID를 read-only query한다. GraphQL deploy 후 build가 실패하면 S3/Studio와 cleanup을 실행하지 않고 previous Gatsby release로 수동 reconcile/rollback한다.
 
 ## 7. release 후 cleanup
 
