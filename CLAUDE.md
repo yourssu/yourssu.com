@@ -86,8 +86,8 @@ GATSBY_APP_GA_ID=<google_analytics_id>
 
 ## Styling
 
-- Custom Tailwind breakpoints: xs(360px), sm(400px), md(768px), lg(1080px),
-  xl(1440px), xxl(1920px)
+- Custom Tailwind screen ranges (min/max): xs(0–350px), sm(350–720px),
+  md(721–1080px), lg(1081–1440px), xl(1441–1920px), xxl(1921px+)
 - Pretendard font family (Regular, SemiBold, Bold)
 - Mobile-first responsive design
 - Class sorting via Oxfmt
@@ -107,7 +107,8 @@ GATSBY_APP_GA_ID=<google_analytics_id>
 - GraphQL queries use `useStaticQuery` hook
 - Images processed through gatsby-plugin-image
 - CI/CD uses pnpm - see `.github/workflows/deploy.yml`
-- 이 프로젝트에서는 항상 반응형을 신경써야해, xs: 390px, query550: 550px,
-  query669: 669px, sm: 720px, md: 1080px, lg: 1440px, xl: 1920px 기준이야.
-  figma에 반응형으로 디자인이 안 되어 있어도 항상 반응형을 생각해서 만들어줘.
-  자세한 사항은 `gatsby-config.ts` 참고.
+- Gatsby `useBreakpoint` queries are independent max-width checks: xs(390px),
+  query550(550px), query669(669px), sm(720px), md(1080px), lg(1440px),
+  xl(1920px). Use these for hook queries; use the Tailwind ranges above for
+  classes. Always consider responsive behavior even when Figma has no
+  responsive design. See `gatsby-config.ts` for details.
