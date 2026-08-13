@@ -10,26 +10,40 @@ export default defineType({
     defineField({
       title: '제목',
       name: 'title',
-      description: '(필수) 양식: 20XX년 X학기 리쿠르팅 - 과제 X (혹은 과제 O)',
+      description: '예: 20XX년 X학기 리쿠르팅',
       type: 'string',
+      validation: (rule) => rule.required(),
     }),
     defineField({
-      title: '리쿠르팅 서류 일정',
-      name: 'formSchedule',
-      description:
-        '"과제 X 문서" 기반으로 반영됩니다. "과제 O 문서"에서는 작성하지 않으셔도 됩니다.',
-      type: 'dateContent',
+      name: 'isActive',
+      title: '현재 리쿠르팅 일정으로 사용',
+      type: 'boolean',
+      initialValue: false,
+      validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'procedure',
-      title: '전체 지원 절차',
-      type: 'array',
-      of: [{ type: 'applyStepContent' }],
+      name: 'withAssignment',
+      title: '과제 포함 일정',
+      type: 'recruitingScheduleContent',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'withoutAssignment',
+      title: '과제 미포함 일정',
+      type: 'recruitingScheduleContent',
+      validation: (rule) => rule.required(),
     }),
   ],
   preview: {
     select: {
       title: 'title',
+      isActive: 'isActive',
+    },
+    prepare({ title, isActive }) {
+      return {
+        title,
+        subtitle: isActive ? '활성 일정' : '비활성 일정',
+      };
     },
   },
 });

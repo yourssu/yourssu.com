@@ -8,13 +8,6 @@ export default defineType({
   icon,
   fields: [
     defineField({
-      name: 'applyProcedure',
-      title: '지원 절차',
-      description:
-        '리쿠르팅을 진행하지 않는 경우, 모든 항목을 비활성화해주세요.',
-      type: 'recruitingScheduleContent',
-    }),
-    defineField({
       title: '부서 기본 정보',
       name: 'basicInformation',
       type: 'informationContent',

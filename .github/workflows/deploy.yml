@@ -58,17 +58,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check GraphQL schema compatibility
-        if: github.event_name == 'release'
-        run: pnpm --dir studio exec sanity graphql deploy --dry-run
-        env:
-          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-
       - name: Lint
         run: pnpm lint
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Validate approved breaking GraphQL cutover (forced dry-run)
+        if: github.event_name == 'release'
+        run: >-
+          pnpm --dir studio exec sanity graphql deploy --dry-run --force
+          --dataset production
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+      - name: Deploy GraphQL API
+        if: github.event_name == 'release'
+        run: pnpm --dir studio exec sanity graphql deploy --force
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
 
       - name: Clean Gatsby build
         run: pnpm clean
@@ -101,12 +109,6 @@ jobs:
 
       - name: Deploy to S3
         run: pnpm deploy
-
-      - name: Deploy GraphQL API
-        if: github.event_name == 'release'
-        run: pnpm --dir studio exec sanity graphql deploy --force
-        env:
-          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
 
       - name: Deploy Sanity Studio
         if: github.event_name == 'release'
