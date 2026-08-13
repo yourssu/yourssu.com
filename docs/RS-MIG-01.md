@@ -120,18 +120,24 @@ pnpm --dir studio exec sanity deploy --yes
 
 1. lint
 2. typecheck
-3. GraphQL compatibility dry-run
-4. `sanity graphql deploy --force`
+3. 승인된 breaking cutover의 forced GraphQL dry-run (검증만)
+4. `sanity graphql deploy --force` (실제 배포)
 5. 환경 파일 생성/Gatsby build
 6. S3 deploy
 7. Studio deploy
 
-release workflow의 GraphQL/Studio deploy 단계는 모두 `release` event에만 실행된다. `repository_dispatch` (`sanity-content-update`)는 두 deploy를 시도하지 않으므로, cutover maintenance gate에서는 GraphQL dry-run부터 S3/Studio 완료까지 content-update dispatch와 editor write를 멈추고 release 완료를 확인한 뒤 재개한다. build가 실패하면 normal step failure로 S3와 Studio 단계도 실행되지 않는다. 호환성 확인만 별도로 하려면 다음 read-only dry-run을 사용한다.
+PR #158과 이 runbook은 다음 16개 legacy GraphQL 필드 제거를 의도된 breaking cutover로 명시적으로 승인한다: `Department.applyProcedure`, `RecruitingScheduleContent.scheduleWithoutAssignment`, `RecruitingScheduleContent.scheduleWithAssignment`, `RecruitingScheduleContent.individualSchedule`, `RecruitingSchedule.formSchedule`, `RecruitingSchedule.procedure`, `DepartmentFilter.applyProcedure`, `RecruitingScheduleContentFilter.scheduleWithoutAssignment`, `RecruitingScheduleContentFilter.scheduleWithAssignment`, `RecruitingScheduleContentFilter.individualSchedule`, `DepartmentSorting.applyProcedure`, `RecruitingScheduleContentSorting.scheduleWithoutAssignment`, `RecruitingScheduleContentSorting.scheduleWithAssignment`, `RecruitingScheduleContentSorting.individualSchedule`, `RecruitingScheduleFilter.formSchedule`, `RecruitingScheduleSorting.formSchedule`. production unforced dry-run에서 확인된 예상 GraphQL additions는 정확히 다음 6개다: `RecruitingScheduleFilter.isActive`, `RecruitingScheduleFilter.withAssignment`, `RecruitingScheduleFilter.withoutAssignment`, `RecruitingScheduleSorting.isActive`, `RecruitingScheduleSorting.withAssignment`, `RecruitingScheduleSorting.withoutAssignment`. 이 16개 removal과 6개 addition 외에 어떤 GraphQL addition 또는 removal이라도 발견되면 release를 중지하고 수동 검토한다.
+
+release workflow의 GraphQL/Studio deploy 단계는 모두 `release` event에만 실행된다. `repository_dispatch` (`sanity-content-update`)는 두 deploy를 시도하지 않으므로, cutover maintenance gate에서는 GraphQL dry-run부터 S3/Studio 완료까지 content-update dispatch와 editor write를 멈추고 release 완료를 확인한 뒤 재개한다. build가 실패하면 normal step failure로 S3와 Studio 단계도 실행되지 않는다. 강제 dry-run은 schema extraction/remote validation만 수행하며 deploy하지 않고, 실제 `sanity graphql deploy --force` 단계와 분리되어 바로 뒤에 실행된다.
+
+강제 dry-run은 diff 상세를 출력하지 않을 수 있다. 그러므로 operator는 먼저 다음 unforced read-only dry-run의 전체 출력과 exit code를 기록하고, 정확히 위의 승인된 16개 제거와 optional additions만 비교한 뒤 forced dry-run 및 실제 deploy를 실행한다. unforced 결과가 known diff와 다르면 중지하고 수동 검토한다.
 
 ```bash
 pnpm --dir studio exec sanity graphql deploy \
   --dry-run --dataset production
 ```
+
+이 unforced 명령은 승인된 breaking removals 때문에 현재 nonzero가 예상된다. 반대로 release workflow의 forced dry-run은 extraction/remote validation이 성공할 때만 zero로 끝나며, 실패하면 실제 deploy로 진행하지 않는다.
 
 ## 5. merge window backfill write
 

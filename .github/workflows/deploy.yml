@@ -64,9 +64,11 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Check GraphQL schema compatibility
+      - name: Validate approved breaking GraphQL cutover (forced dry-run)
         if: github.event_name == 'release'
-        run: pnpm --dir studio exec sanity graphql deploy --dry-run
+        run: >-
+          pnpm --dir studio exec sanity graphql deploy --dry-run --force
+          --dataset production
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
 
