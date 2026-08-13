@@ -3,6 +3,7 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import recruitingSchedule, {
   type RecruitingDepartmentReference,
   type RecruitingScheduleDocument,
+  validateRecruitingSchedule,
 } from './src/utils/recruitingSchedule';
 
 interface QueryResult {
@@ -185,6 +186,7 @@ export const createPages: GatsbyNode['createPages'] = async ({
       .map(({ node }) => node._id)
       .filter((id): id is string => Boolean(id)),
   );
+  validateRecruitingSchedule(schedule, knownDepartmentIds);
   const DescriptionTemplateComponent = path.resolve(
     __dirname,
     'src/templates/DescriptionTemplate.tsx',

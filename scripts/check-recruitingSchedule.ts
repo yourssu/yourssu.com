@@ -77,6 +77,24 @@ assert(
   'base procedure should resolve',
 );
 
+const noRecruitingSchedule: RecruitingScheduleDocument =
+  structuredClone(schedule);
+for (const detailName of ['withAssignment', 'withoutAssignment'] as const) {
+  const detail = detailFor(noRecruitingSchedule, detailName);
+  assert(detail.departments, `${detailName} departments should exist`);
+  detail.departments.forEach((value) => {
+    assert(value, `${detailName} department should exist`);
+    if (value.basicInformation) value.basicInformation.isRecruiting = false;
+  });
+}
+detailFor(noRecruitingSchedule, 'withAssignment').procedure = [
+  { step: '서류', schedule: null },
+];
+assertThrows(
+  () => validateRecruitingSchedule(noRecruitingSchedule, knownDepartmentIds),
+  'incomplete',
+);
+
 const validStringSchedule = structuredClone(schedule);
 detailFor(validStringSchedule, 'withAssignment').formSchedule = {
   start: '2026-03-01',

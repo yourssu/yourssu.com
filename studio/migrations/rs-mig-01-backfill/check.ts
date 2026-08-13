@@ -188,6 +188,22 @@ assert(
     !cleanupFirst.unsetLegacyRoots,
   'first cleanup should delete X and unset only allowlisted department procedures',
 );
+const xPresentPartialCleanup = planCleanup(
+  enriched.map((document) => {
+    if (document._id !== 'with') return document;
+    const { applyProcedure: _applyProcedure, ...withoutProcedure } = document;
+    return withoutProcedure;
+  }),
+  cleanupManifest,
+);
+assert(
+  xPresentPartialCleanup.deleteLegacyX &&
+    xPresentPartialCleanup.unsetApplyProcedureIds.length === 2 &&
+    xPresentPartialCleanup.unsetApplyProcedureIds.includes('individual') &&
+    xPresentPartialCleanup.unsetApplyProcedureIds.includes('without'),
+  'cleanup should plan X deletion and only remaining unsets when X remains',
+);
+
 const partialCleanup = planCleanup(
   enriched
     .filter((document) => document._id !== 'x')

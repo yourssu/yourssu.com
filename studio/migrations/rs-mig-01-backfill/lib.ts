@@ -656,38 +656,72 @@ export const planBackfill = (documents: RawDocument[]): BackfillPlan => {
   };
 };
 
-const assertManifest = (
-  documents: RawDocument[],
-  plan: BackfillPlan,
-  manifest: CleanupManifest,
-) => {
-  if (
-    manifest.legacyOId !== plan.legacyOId ||
-    manifest.legacyXId !== plan.legacyXId
-  ) {
-    abort(
-      documents,
-      `cleanup manifest schedule IDs do not match validated pair: O=${manifest.legacyOId}, X=${manifest.legacyXId}`,
-    );
-  }
-  if (manifest.backfillTargetFingerprint !== plan.backfillTargetFingerprint) {
-    abort(
-      documents,
-      `cleanup manifest target fingerprint does not match validated O target: expected ${plan.backfillTargetFingerprint}, received ${manifest.backfillTargetFingerprint}`,
-    );
-  }
-  const expected = [...plan.departmentIds].sort();
-  const actual = [...manifest.departmentIds].sort();
-  if (!sameValue(actual, expected)) {
-    abort(
-      documents,
-      `cleanup manifest department allowlist does not exactly match backfill IDs: expected ${expected.join(', ') || '<none>'}, received ${actual.join(', ') || '<none>'}`,
-    );
-  }
-};
-
 const hasLegacyRoots = (schedule: RawDocument) =>
   hasOwn(schedule, 'formSchedule') || hasOwn(schedule, 'procedure');
+
+const targetDepartmentIds = (
+  documents: RawDocument[],
+  schedule: RawDocument,
+): string[] => {
+  const ids = new Set<string>();
+  for (const detailName of ['withAssignment', 'withoutAssignment'] as const) {
+    const detail = schedule[detailName];
+    const detailRecord: RawDocument = isRecord(detail)
+      ? detail
+      : abort(
+          documents,
+          `selected O schedule ${idOf(schedule, 'recruitingSchedule')} has malformed ${detailName} target departments`,
+        );
+    const references: unknown[] = Array.isArray(detailRecord.departments)
+      ? detailRecord.departments
+      : abort(
+          documents,
+          `selected O schedule ${idOf(schedule, 'recruitingSchedule')} has malformed ${detailName} target departments`,
+        );
+    for (const [index, reference] of references.entries()) {
+      const referenceId =
+        isRecord(reference) &&
+        typeof reference._ref === 'string' &&
+        reference._ref.trim()
+          ? reference._ref
+          : abort(
+              documents,
+              `selected O schedule ${idOf(schedule, 'recruitingSchedule')} has malformed ${detailName}.departments[${index}] target reference`,
+            );
+      if (ids.has(referenceId)) {
+        abort(
+          documents,
+          `selected O schedule ${idOf(schedule, 'recruitingSchedule')} maps department ${referenceId} more than once`,
+        );
+      }
+      ids.add(referenceId);
+    }
+  }
+  return [...ids].sort();
+};
+
+const assertCleanupDepartmentAllowlist = (
+  documents: RawDocument[],
+  departments: RawDocument[],
+  o: RawDocument,
+  manifest: CleanupManifest,
+) => {
+  const targetIds = targetDepartmentIds(documents, o);
+  const manifestIds = [...manifest.departmentIds].sort();
+  if (!sameValue(manifestIds, targetIds)) {
+    abort(
+      documents,
+      `cleanup manifest department allowlist does not exactly match O target IDs: expected ${targetIds.join(', ') || '<none>'}, received ${manifestIds.join(', ') || '<none>'}`,
+    );
+  }
+  const departmentIds = new Set(
+    departments.map((department) => idOf(department, 'department')),
+  );
+  manifest.departmentIds.forEach((id) => {
+    if (!departmentIds.has(id))
+      abort(documents, `cleanup department ID ${id} was not found`);
+  });
+};
 
 const assertAlreadyBackfilledO = (documents: RawDocument[], o: RawDocument) => {
   const id = idOf(o, 'recruitingSchedule');
@@ -763,14 +797,36 @@ export const planCleanup = (
 
   const xStillExists = Boolean(x);
   if (xStillExists) {
-    const plan = planBackfill(documents);
-    assertManifest(documents, plan, manifest);
-    if (plan.targetId !== manifest.legacyOId) {
+    const paired = pair(documents);
+    const selectedX = paired.x;
+    const selectedOId = idOf(paired.o, 'recruitingSchedule');
+    const selectedXId = idOf(selectedX, 'recruitingSchedule');
+    if (
+      selectedOId !== manifest.legacyOId ||
+      selectedXId !== manifest.legacyXId
+    ) {
       abort(
         documents,
-        `cleanup target O ID ${manifest.legacyOId} is not the validated target`,
+        `cleanup manifest schedule IDs do not match validated pair: O=${manifest.legacyOId}, X=${manifest.legacyXId}`,
       );
     }
+    assertScheduleStates(documents, selectedOId, selectedXId);
+    assertAlreadyBackfilledO(documents, paired.o);
+    if (
+      targetFingerprintOfDocument(documents, paired.o) !==
+      manifest.backfillTargetFingerprint
+    ) {
+      abort(
+        documents,
+        `cleanup manifest target fingerprint does not match O document ${manifest.legacyOId}`,
+      );
+    }
+    assertCleanupDepartmentAllowlist(
+      documents,
+      departments,
+      paired.o,
+      manifest,
+    );
   } else {
     const otherLegacyX = schedules.filter(
       (schedule) => titleParts(schedule.title)?.mode === 'X',
@@ -799,13 +855,12 @@ export const planCleanup = (
       );
     }
     assertPostBackfillScheduleStates(documents, manifest.legacyOId);
-    const departmentIds = new Set(
-      departments.map((department) => idOf(department, 'department')),
+    assertCleanupDepartmentAllowlist(
+      documents,
+      departments,
+      selectedO,
+      manifest,
     );
-    manifest.departmentIds.forEach((id) => {
-      if (!departmentIds.has(id))
-        abort(documents, `cleanup department ID ${id} was not found`);
-    });
   }
 
   const unsetApplyProcedureIds = departments
