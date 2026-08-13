@@ -339,12 +339,17 @@ export const validateRecruitingSchedule = (
 export default function recruitingSchedule(
   schedule: RecruitingScheduleDocument,
   department: RecruitingDepartmentReference | null,
+  knownDepartmentIds: ReadonlySet<string>,
 ): ResolvedRecruitingSchedule {
-  const validatedSchedule = validateRecruitingSchedule(schedule);
+  const validatedSchedule = validateRecruitingSchedule(
+    schedule,
+    knownDepartmentIds,
+  );
   const targetDepartment = requireDepartment(
     schedule,
     department,
     'department',
+    knownDepartmentIds,
   );
   const validatedDetails: [DetailName, ValidatedRecruitingScheduleDetail][] = [
     ['withAssignment', validatedSchedule.withAssignment],

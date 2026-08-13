@@ -7,7 +7,7 @@
 - 프로젝트: `f877vcud`, production dataset: `production`.
 - 검증된 도구 버전: Studio package `sanity@6.9.2`, 설치된 CLI `@sanity/cli@7.18.0`, migration API: `sanity/migrate`. 버전과 help gate를 실행 결과에 보관하고, 값이 다르면 중지한다.
 - migration ID는 `rs-mig-01-backfill`과 `rs-mig-01-cleanup`이다. `sanity migrations`는 검증된 CLI 7.18.0에서 지원되는 명령이다.
-- backfill은 legacy O 문서 하나만 patch한다. legacy X 문서와 legacy department 필드/문서는 보존한다. 새 target payload가 있는 O 문서를 다시 만들지 않는다.
+- backfill은 legacy O 문서 하나만 patch한다. baseline에서 생성된 선택 O/X가 `isActive`를 생략한 경우를 허용하되, O만 `true`로 보강하고 X는 생략 또는 `false`로 유지한다. 선택 X의 `true`/malformed 값과 unrelated schedule의 누락/비활성 외 상태는 abort한다. legacy X 문서와 legacy department 필드/문서는 보존한다. 새 target payload가 있는 O 문서를 다시 만들지 않는다.
 - cleanup은 release 후 별도 승인으로만 실행한다. 정확히 검증된 X ID 삭제, backfill에서 처리한 정확한 department ID의 `applyProcedure` unset, 선택한 O 문서의 legacy root `formSchedule`/`procedure` unset만 허용한다.
 - 이 migration은 새 스키마를 배포하거나 Gatsby/UI 동작을 바꾸지 않는다. S3 배포와 production 쓰기는 운영자 책임이다.
 
@@ -15,7 +15,7 @@
 
 - `studio/migrations/rs-mig-01-backfill/index.ts`: 전체 입력을 먼저 읽고 preflight를 통과한 뒤 O 문서에 한 번의 patch를 만든다.
 - `studio/migrations/rs-mig-01-backfill/lib.ts`: pair/mode/reference/date/procedure/target/allowlist 검증과 deterministic payload 생성.
-- `studio/migrations/rs-mig-01-backfill/check.ts`: dependency-free 순수 check. individual override, 재실행 no-op, O/X 충돌 abort를 검증한다.
+- `studio/migrations/rs-mig-01-backfill/check.ts`: dependency-free 순수 check. individual override, O/X `isActive` 생략 호환, 재실행 no-op, partial cleanup recovery, O/X 충돌 abort를 검증한다.
 - `studio/migrations/rs-mig-01-cleanup/index.ts`: backfill과 분리된 cleanup migration. 파일 안의 `manifest`는 빈 template이므로 운영자가 성공한 backfill report의 ID만 채워야 한다. 이 파일에 production ID를 커밋하지 않는다.
 
 preflight는 async iterable migration의 첫 yield 전에 모든 `recruitingSchedule`/`department` 문서를 수집한다. 관련 문서 ID가 `drafts.`로 시작하면 선택 전에 즉시 abort한다. 따라서 preflight가 실패하면 mutation yield가 없어 write가 발생하지 않는다. Sanity runner는 mutation을 최대 256KB 요청 batch로 나누고 기본 동시성 6으로 제출한다. 원자성은 각 제출 batch/transaction 단위뿐이며 일부 batch만 commit되거나 실패/unknown outcome이 섞일 수 있다. `UnknownTransactionOutcome` 또는 부분 실패가 보이면 all-or-nothing으로 가정하거나 blind retry하지 말고 즉시 중지한다. fresh export와 inventory를 만들고 exact ID/field를 reconcile한 뒤 reviewer가 확인하고, idempotent migration을 검토 후 다시 실행한다.
@@ -51,7 +51,7 @@ shasum -a 256 "$RS_EXPORT"
 tar -tzf "$RS_EXPORT" | head
 ```
 
-export는 `/tmp` 등 repository 밖에 둔다. `.env`, token, Sanity secret을 export/archive/git에 넣지 않는다. `--no-drafts` export는 fixture/staging dry-run용이며, 실제 live migration은 CLI가 dataset export endpoint에서 읽으므로 write 전에 아래 live inventory도 다시 확인한다.
+export는 `/tmp` 등 repository 밖에 둔다. `.env`, token, Sanity secret을 export/archive/git에 넣지 않는다. 설치된 CLI는 `--from-export`와 execution 자체를 지원하지만, RS-MIG-01 정책은 export-backed 실행을 dry-run으로만 허용한다. `--no-drafts` export는 fixture/staging dry-run용이며, 실제 live migration은 CLI가 dataset export endpoint에서 읽으므로 write 전에 아래 live inventory도 다시 확인한다.
 
 승인된 별도 staging dataset에서만 export를 import할 수 있다. production dataset을 target으로 쓰지 않는다.
 
@@ -71,7 +71,7 @@ pnpm --dir studio exec sanity documents query \
   > /tmp/rs-mig-01-inventory.json
 ```
 
-export 또는 staging에서 먼저 읽기 전용 dry-run을 한다. `--from-export`는 설치된 CLI help상 dry-run에만 지원되므로 이 명령에는 `--no-dry-run`을 붙이지 않는다. 기본값이 dry mode다.
+export 또는 staging에서 먼저 읽기 전용 dry-run을 한다. 설치된 CLI help는 `--from-export`를 execution에도 허용하지만, RS-MIG-01 운영 정책상 export-backed 실행에는 `--no-dry-run`을 붙이지 않는다. 기본값이 dry mode다.
 
 ```bash
 pnpm --dir studio exec sanity migrations run rs-mig-01-backfill \
@@ -90,7 +90,7 @@ pnpm --dir studio exec sanity migrations run rs-mig-01-backfill \
 
 1. title이 `... - 과제 O`/`... - 과제 X`인 legacy 문서가 각각 정확히 하나가 아님.
 2. 두 title의 cycle prefix가 다름.
-3. 다른 schedule의 `isActive`가 `false`가 아니거나 새 target field를 가짐 (누락도 abort).
+3. 선택 O/X를 제외한 unrelated schedule의 `isActive`가 `false`가 아니거나 새 target field를 가짐 (누락도 abort). 선택 X는 `isActive` 생략 또는 `false`만 허용하며, 선택 O는 생략을 허용하고 backfill에서 `true`로 설정한다.
 4. O/X의 form date가 `YYYY-MM-DD`가 아니거나 실제 날짜가 아니고, procedure가 없거나 비어 있거나 step/schedule이 불완전함.
 5. recruiting department의 legacy mode가 정확히 하나가 아님. mode 충돌/누락, individual detail 누락도 abort.
 6. department reference/ID가 중복·누락이거나 target detail에 같은 department가 둘 이상 매핑됨.
@@ -118,11 +118,13 @@ pnpm --dir studio exec sanity deploy --yes
 
 `schemas deploy`는 dry-run flag가 없는 설치 버전의 schema-store write 명령이므로 반드시 별도 승인 후 실행한다. GraphQL API 호환성 dry-run과 실제 GraphQL deploy는 release workflow가 담당한다. release에서는 다음 순서를 지킨다.
 
-1. GraphQL compatibility dry-run
-2. `sanity graphql deploy --force`
-3. lint/typecheck/환경 파일 생성/Gatsby build
-4. S3 deploy
-5. Studio deploy
+1. lint
+2. typecheck
+3. GraphQL compatibility dry-run
+4. `sanity graphql deploy --force`
+5. 환경 파일 생성/Gatsby build
+6. S3 deploy
+7. Studio deploy
 
 release workflow의 GraphQL/Studio deploy 단계는 모두 `release` event에만 실행된다. `repository_dispatch` (`sanity-content-update`)는 두 deploy를 시도하지 않으므로, cutover maintenance gate에서는 GraphQL dry-run부터 S3/Studio 완료까지 content-update dispatch와 editor write를 멈추고 release 완료를 확인한 뒤 재개한다. build가 실패하면 normal step failure로 S3와 Studio 단계도 실행되지 않는다. 호환성 확인만 별도로 하려면 다음 read-only dry-run을 사용한다.
 
@@ -175,17 +177,17 @@ curl --fail --silent --show-error \
   http://127.0.0.1:9000/recruiting/<verified-department-path>/ >/dev/null
 ```
 
-승인된 release deploy는 기존 GitHub Actions workflow를 사용한다. workflow는 GraphQL compatibility dry-run과 실제 GraphQL deploy를 먼저 끝낸 뒤 checks/env/Gatsby build를 실행하고, build 성공 시에만 S3를 deploy한 다음 Studio를 deploy한다. S3 단계의 기존 command는 다음과 같다.
+승인된 release deploy는 기존 GitHub Actions workflow를 사용한다. workflow는 lint/typecheck를 먼저 끝낸 뒤 GraphQL compatibility dry-run과 실제 GraphQL deploy를 실행하고, checks/env/Gatsby build 성공 시에만 S3를 deploy한 다음 Studio를 deploy한다. 자동 rollback은 수행하지 않는다. S3 단계의 기존 command는 다음과 같다.
 
 ```bash
 pnpm deploy
 ```
 
-`repository_dispatch` content-update run은 GraphQL/Studio deploy 없이 checks/build/S3만 수행하므로, cutover 중에는 section 4의 maintenance gate로 dispatch를 멈춘다. 배포 후 production page에서 모집 일정/지원 절차/individual override를 확인하고, Sanity에서도 exact ID를 read-only query한다. GraphQL deploy 후 build가 실패하면 S3/Studio와 cleanup을 실행하지 않고 previous Gatsby release로 수동 reconcile/rollback한다.
+`repository_dispatch` content-update run은 GraphQL/Studio deploy 없이 checks/build/S3만 수행하므로, cutover 중에는 section 4의 maintenance gate로 dispatch를 멈춘다. 배포 후 production page에서 모집 일정/지원 절차/individual override를 확인하고, Sanity에서도 exact ID를 read-only query한다. GraphQL deploy 후 build가 실패하면 S3/Studio와 cleanup을 실행하지 않고 previous Gatsby release로 수동 reconcile한다. 자동 rollback은 없다.
 
 ## 7. release 후 cleanup
 
-cleanup은 live page 확인, previous export 보관, operator의 명시적 승인 이후에만 실행한다. cleanup file의 `manifest`에 성공한 backfill report의 다음 값만 채운다.
+cleanup은 live page 확인, previous export 보관, operator의 명시적 승인 이후에만 실행한다. cleanup 시작부터 cleanup write 직후의 fresh inventory/query와 final verification이 끝날 때까지 editor/content update freeze를 유지한다. cleanup file의 `manifest`에 성공한 backfill report의 다음 값만 채운다.
 
 ```ts
 const manifest: CleanupManifest = {
@@ -207,13 +209,17 @@ department”가 아니라 backfill이 mode를 확인하고 target에 실제로 
 release가 legacy root를 더 이상 읽지 않는 것을 확인하고 별도 승인을 받은
 경우에만 `true`로 바꾼다.
 
-먼저 cleanup 직전 fresh export를 만들고 dry-run한다.
+먼저 cleanup 직전 fresh export와 inventory/query를 만들고 dry-run한다.
 
 ```bash
 export RS_CLEANUP_EXPORT="/tmp/rs-mig-01-pre-cleanup-$(date +%Y%m%d-%H%M%S).tar.gz"
 pnpm --dir studio exec sanity datasets export production "$RS_CLEANUP_EXPORT" \
   --project-id f877vcud --no-assets --no-drafts --raw
 shasum -a 256 "$RS_CLEANUP_EXPORT"
+pnpm --dir studio exec sanity documents query \
+  '*[_type in ["recruitingSchedule", "department"]] | order(_type asc, _id asc){_id, _type, title, isActive, applyProcedure, formSchedule, procedure, withAssignment, withoutAssignment}' \
+  --project-id f877vcud --dataset production --api-version 2025-08-15 \
+  > /tmp/rs-mig-01-pre-cleanup-inventory.json
 
 pnpm --dir studio exec sanity migrations run rs-mig-01-cleanup \
   --from-export="$RS_CLEANUP_EXPORT" --project=f877vcud --dataset=production \
@@ -222,14 +228,18 @@ pnpm --dir studio exec sanity migrations run rs-mig-01-cleanup \
 
 첫 cleanup dry-run에서 허용되는 출력은 정확한 `legacyXId` 하나의 delete, allowlist department들의 `applyProcedure` unset, `removeLegacyRoots=true`일 때만 O root 두 field unset이다. 새 `withAssignment`/`withoutAssignment`와 O의 `isActive`는 출력에 없어야 한다. ID/allowlist mismatch, O/X state mismatch, 다른 X 존재, department 누락이면 abort한다.
 
-operator가 dry-run과 live verification을 확인한 후에만 write한다.
+operator가 dry-run과 live verification을 확인하고, freeze를 유지한 채 **no-dry-run 직전에 fresh inventory/query를 한 번 더 실행**한 후에만 write한다. 이 native migration에는 revision guard를 추가하지 않는다.
 
 ```bash
+pnpm --dir studio exec sanity documents query \
+  '*[_type in ["recruitingSchedule", "department"]] | order(_type asc, _id asc){_id, _type, title, isActive, applyProcedure, formSchedule, procedure, withAssignment, withoutAssignment}' \
+  --project-id f877vcud --dataset production --api-version 2025-08-15 \
+  > /tmp/rs-mig-01-immediately-before-cleanup-write.json
 pnpm --dir studio exec sanity migrations run rs-mig-01-cleanup \
   --project=f877vcud --dataset=production --progress --no-dry-run
 ```
 
-write 후 fresh export를 다시 만들고 같은 manifest로 cleanup dry-run을 다시 실행한다. exit 0이며 mutation 출력이 없어야 한다. 이것이 두 번째 cleanup no-op 증거다. backfill도 enriched O export에서 두 번째 dry-run을 실행해 mutation 출력이 없는지 확인한다.
+write 후 freeze를 유지한 채 fresh export와 inventory/query를 다시 만들고 같은 manifest로 cleanup dry-run을 다시 실행한다. exit 0이며 mutation 출력이 없어야 한다. 이것이 두 번째 cleanup no-op 증거다. 최종 verification을 완료하고 reviewer/operator가 확인한 뒤에만 editor/content update freeze를 해제한다. backfill도 enriched O export에서 두 번째 dry-run을 실행해 mutation 출력이 없는지 확인한다.
 
 ## 8. rollback
 

@@ -258,11 +258,7 @@ const parseDate = (
 const targetKey = (prefix: string, id: string) =>
   `${prefix}-${id}`.replace(/[^A-Za-z0-9_-]/g, '_');
 
-const targetReference = (
-  documents: RawDocument[],
-  id: string,
-  prefix: string,
-): TargetReference => ({
+const targetReference = (id: string, prefix: string): TargetReference => ({
   _key: targetKey(prefix, id),
   _ref: id,
   _type: 'reference',
@@ -430,11 +426,8 @@ const departmentGroups = (
   };
 };
 
-const departmentReference = (
-  documents: RawDocument[],
-  department: RawDocument,
-  prefix: string,
-) => targetReference(documents, idOf(department, 'department'), prefix);
+const departmentReference = (department: RawDocument, prefix: string) =>
+  targetReference(idOf(department, 'department'), prefix);
 
 const buildDetail = (
   documents: RawDocument[],
@@ -455,7 +448,7 @@ const buildDetail = (
     if (departmentIds.has(id))
       abort(documents, `duplicate target department ID ${id}`);
     departmentIds.add(id);
-    const reference = departmentReference(documents, department, 'department');
+    const reference = departmentReference(department, 'department');
     if (referenceKeys.has(reference._key)) {
       abort(
         documents,
@@ -483,11 +476,7 @@ const buildDetail = (
     return {
       _key: key,
       _type: 'object' as const,
-      department: departmentReference(
-        documents,
-        department,
-        'override-department',
-      ),
+      department: departmentReference(department, 'override-department'),
       formSchedule: targetDate(
         documents,
         legacy.formSchedule,
@@ -512,6 +501,7 @@ const buildDetail = (
 const assertScheduleStates = (
   documents: RawDocument[],
   selectedOId: string,
+  selectedXId: string,
 ) => {
   documents
     .filter((doc) => doc._type === 'recruitingSchedule')
@@ -520,7 +510,17 @@ const assertScheduleStates = (
       if (doc.isActive !== undefined && typeof doc.isActive !== 'boolean') {
         abort(documents, `recruitingSchedule ${id} has malformed isActive`);
       }
-      if (id !== selectedOId && doc.isActive !== false) {
+      if (
+        id === selectedXId &&
+        doc.isActive !== undefined &&
+        doc.isActive !== false
+      ) {
+        abort(
+          documents,
+          `selected legacy X schedule ${id} must be inactive or omit isActive`,
+        );
+      }
+      if (id !== selectedOId && id !== selectedXId && doc.isActive !== false) {
         abort(
           documents,
           `unexpected non-inactive schedule ${id} "${titleOf(doc)}" isActive=${String(doc.isActive)}`,
@@ -566,7 +566,7 @@ export const planBackfill = (documents: RawDocument[]): BackfillPlan => {
   const { o, x } = pair(documents);
   const legacyOId = idOf(o, 'recruitingSchedule');
   const legacyXId = idOf(x, 'recruitingSchedule');
-  assertScheduleStates(documents, legacyOId);
+  assertScheduleStates(documents, legacyOId, legacyXId);
 
   const departments = collectById(documents, 'department');
   const groups = departmentGroups(documents, departments);
@@ -805,13 +805,6 @@ export const planCleanup = (
     manifest.departmentIds.forEach((id) => {
       if (!departmentIds.has(id))
         abort(documents, `cleanup department ID ${id} was not found`);
-      const department = departments.find((candidate) => candidate._id === id);
-      if (department && hasOwn(department, 'applyProcedure')) {
-        abort(
-          documents,
-          `cleanup is not a no-op: department ${id} still has applyProcedure`,
-        );
-      }
     });
   }
 
@@ -833,5 +826,3 @@ export const planCleanup = (
     unsetLegacyRoots: manifest.removeLegacyRoots && hasLegacyRoots(selectedO),
   };
 };
-
-export const targetForCheck = (plan: BackfillPlan) => plan.target;

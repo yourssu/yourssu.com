@@ -29,6 +29,8 @@ const department = (id: string, name = id): RecruitingDepartmentReference => ({
   basicInformation: { name, isRecruiting: true },
 });
 
+const knownDepartmentIds = new Set(['design', 'engineering']);
+
 const schedule: RecruitingScheduleDocument = {
   _id: 'schedule-1',
   title: '2026년 1학기 리쿠르팅',
@@ -56,7 +58,15 @@ const detailFor = (
   return detail;
 };
 
-const resolved = recruitingSchedule(schedule, department('design'));
+const resolved = recruitingSchedule(
+  schedule,
+  department('design'),
+  knownDepartmentIds,
+);
+assertThrows(
+  () => recruitingSchedule(schedule, department('unknown'), knownDepartmentIds),
+  'missing or broken reference',
+);
 assert(
   resolved.formSchedule.start === null && resolved.formSchedule.end === null,
   'base schedule should preserve open-ended dates',
@@ -73,8 +83,11 @@ detailFor(validStringSchedule, 'withAssignment').formSchedule = {
   end: '2026-03-02',
 };
 assert(
-  recruitingSchedule(validStringSchedule, department('design')).formSchedule
-    .start === '2026-03-01',
+  recruitingSchedule(
+    validStringSchedule,
+    department('design'),
+    knownDepartmentIds,
+  ).formSchedule.start === '2026-03-01',
   'valid exact date strings should remain valid',
 );
 
@@ -94,7 +107,11 @@ const overrideSchedule: RecruitingScheduleDocument = {
     ],
   },
 };
-const override = recruitingSchedule(overrideSchedule, department('design'));
+const override = recruitingSchedule(
+  overrideSchedule,
+  department('design'),
+  knownDepartmentIds,
+);
 assert(
   override.formSchedule.start instanceof Date &&
     override.formSchedule.start.toISOString() === '2026-03-03T00:00:00.000Z' &&
@@ -109,7 +126,7 @@ const rejects = (
   const invalid = structuredClone(schedule);
   mutate(invalid);
   assertThrows(
-    () => recruitingSchedule(invalid, department('design')),
+    () => recruitingSchedule(invalid, department('design'), knownDepartmentIds),
     message,
   );
 };

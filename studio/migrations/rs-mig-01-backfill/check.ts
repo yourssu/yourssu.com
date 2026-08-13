@@ -69,6 +69,17 @@ assert(
   'individual override should be copied',
 );
 
+const omittedLegacyFlags = documents.map((document) => {
+  if (document._id !== 'x') return document;
+  const { isActive: _isActive, ...withoutActiveFlag } = document;
+  return withoutActiveFlag;
+});
+const omittedFirst = planBackfill(omittedLegacyFlags);
+assert(
+  omittedFirst.setActive && omittedFirst.setTarget,
+  'legacy O/X documents may omit isActive on the initial backfill',
+);
+
 const enriched = documents.map((document) =>
   document._id === 'o'
     ? {
@@ -111,6 +122,28 @@ expectAbort(
   invalid,
   'duplicate O/X title pair should abort',
   'expected exactly one',
+);
+const activeX = documents.map((document) =>
+  document._id === 'x' ? { ...document, isActive: true } : document,
+);
+expectAbort(
+  activeX,
+  'selected active X should abort',
+  'selected legacy X schedule',
+);
+const unknownActive = [
+  ...documents,
+  {
+    _id: 'unrelated',
+    _type: 'recruitingSchedule',
+    title: 'unrelated',
+    isActive: undefined,
+  },
+];
+expectAbort(
+  unknownActive,
+  'unrelated schedule without isActive should abort',
+  'unexpected non-inactive schedule',
 );
 
 const draftFixture = documents.map((document) =>
@@ -155,6 +188,44 @@ assert(
     !cleanupFirst.unsetLegacyRoots,
   'first cleanup should delete X and unset only allowlisted department procedures',
 );
+const partialCleanup = planCleanup(
+  enriched
+    .filter((document) => document._id !== 'x')
+    .map((document) => {
+      if (document._id !== 'with') return document;
+      const { applyProcedure: _applyProcedure, ...withoutProcedure } = document;
+      return withoutProcedure;
+    }),
+  cleanupManifest,
+);
+assert(
+  !partialCleanup.deleteLegacyX &&
+    partialCleanup.unsetApplyProcedureIds.length === 2 &&
+    partialCleanup.unsetApplyProcedureIds.includes('individual') &&
+    partialCleanup.unsetApplyProcedureIds.includes('without'),
+  'cleanup should plan only remaining department unsets after X was already deleted',
+);
+
+const rootsAlreadyRemoved = enriched
+  .filter((document) => document._id !== 'x')
+  .map((document) => {
+    if (document._id !== 'o') return document;
+    const {
+      formSchedule: _formSchedule,
+      procedure: _procedure,
+      ...withoutRoots
+    } = document;
+    return withoutRoots;
+  });
+const rootsCleanup = planCleanup(rootsAlreadyRemoved, {
+  ...cleanupManifest,
+  removeLegacyRoots: true,
+});
+assert(
+  !rootsCleanup.unsetLegacyRoots,
+  'cleanup should tolerate already-removed optional O legacy roots',
+);
+
 const cleanupRerun = planCleanup(
   enriched
     .filter((document) => document._id !== 'x')
