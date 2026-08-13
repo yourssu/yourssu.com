@@ -12,7 +12,9 @@ import informationContent from './Types/informationContent';
 import { mainPageContentTypes } from './Types/mainPageContent';
 import presenterContent from './Types/presenterContent';
 import { recruitingPageContentTypes } from './Types/recruitingPageContent';
-import recruitingScheduleContent from './Types/recruitingScheduleContent';
+import recruitingScheduleContent, {
+  recruitingScheduleDepartmentOverride,
+} from './Types/recruitingScheduleContent';
 import roadToProContent from './Types/roadToProContent';
 import skillContent from './Types/skillContent';
 import articleContent from './Types/articleContent';
@@ -39,6 +41,7 @@ export const schemaTypes = [
   inaWordContent,
   presenterContent,
   recruitingScheduleContent,
+  recruitingScheduleDepartmentOverride,
   dateContent,
   articleContent,
   article,
