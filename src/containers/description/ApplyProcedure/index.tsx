@@ -32,7 +32,7 @@ function ApplyProcedure({ applyProcedure }: ApplyProcedureProps) {
     return () => document.removeEventListener('mousedown', handleClose);
   }, [isWarningOpen]);
 
-  // 리쿠르팅을 안하면 null 반환
+  // 리크루팅을 안하면 null 반환
   if (!applyProcedure || applyProcedure.length === 0) return null;
 
   return (

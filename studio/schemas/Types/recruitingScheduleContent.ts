@@ -40,14 +40,14 @@ export default defineType({
     defineField({
       name: 'departments',
       title: '적용 부서',
-      description: '이 일정으로 리쿠르팅할 부서를 모두 선택해주세요.',
+      description: '이 일정으로 리크루팅할 부서를 모두 선택해주세요.',
       type: 'array',
       of: [{ type: 'reference', to: [{ type: 'department' }] }],
       validation: (rule) => rule.required().min(1),
     }),
     defineField({
       name: 'formSchedule',
-      title: '리쿠르팅 서류 일정',
+      title: '리크루팅 서류 일정',
       type: 'dateContent',
       validation: (rule) => rule.required(),
     }),

@@ -21,16 +21,16 @@ export const structure: StructureResolver = (S) =>
       singleton(S, '메인 페이지', 'mainPage', 'mainPage'),
       S.listItem()
         .id('recruiting')
-        .title('리쿠르팅')
+        .title('리크루팅')
         .child(
           S.list()
             .id('recruiting-content')
-            .title('리쿠르팅')
+            .title('리크루팅')
             .items([
-              singleton(S, '리쿠르팅 랜딩', 'recruitingPage', 'recruitingPage'),
+              singleton(S, '리크루팅 랜딩', 'recruitingPage', 'recruitingPage'),
               S.documentTypeListItem('department').title('부서 상세'),
               S.documentTypeListItem('recruitingSchedule').title(
-                '공통 리쿠르팅 일정',
+                '공통 리크루팅 일정',
               ),
               S.documentTypeListItem('roadToPro').title('Road to Pro'),
             ]),

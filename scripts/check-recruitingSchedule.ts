@@ -33,7 +33,7 @@ const knownDepartmentIds = new Set(['design', 'engineering']);
 
 const schedule: RecruitingScheduleDocument = {
   _id: 'schedule-1',
-  title: '2026년 1학기 리쿠르팅',
+  title: '2026년 1학기 리크루팅',
   isActive: true,
   withAssignment: {
     departments: [department('design')],

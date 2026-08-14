@@ -10,13 +10,13 @@ export default defineType({
     defineField({
       title: '제목',
       name: 'title',
-      description: '예: 20XX년 X학기 리쿠르팅',
+      description: '예: 20XX년 X학기 리크루팅',
       type: 'string',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'isActive',
-      title: '현재 리쿠르팅 일정으로 사용',
+      title: '현재 리크루팅 일정으로 사용',
       type: 'boolean',
       initialValue: false,
       validation: (rule) => rule.required(),

@@ -13,14 +13,14 @@ const documents: RawDocument[] = [
   {
     _id: 'o',
     _type: 'recruitingSchedule',
-    title: '2026년 1학기 리쿠르팅 - 과제 O',
+    title: '2026년 1학기 리크루팅 - 과제 O',
     formSchedule: { start: '2026-03-01', end: '2026-03-10' },
     procedure: [{ _key: 'o-step', step: '서류', schedule: '03.01' }],
   },
   {
     _id: 'x',
     _type: 'recruitingSchedule',
-    title: '2026년 1학기 리쿠르팅 - 과제 X',
+    title: '2026년 1학기 리크루팅 - 과제 X',
     isActive: false,
     formSchedule: { start: '2026-03-02', end: '2026-03-11' },
     procedure: [{ _key: 'x-step', step: '서류', schedule: '03.02' }],
@@ -115,7 +115,7 @@ const expectAbort = (
 
 const invalid = documents.map((document) =>
   document._id === 'x'
-    ? { ...document, title: '2026년 1학기 리쿠르팅 - 과제 O' }
+    ? { ...document, title: '2026년 1학기 리크루팅 - 과제 O' }
     : document,
 );
 expectAbort(
