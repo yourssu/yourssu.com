@@ -44,9 +44,9 @@ export default defineType({
     }),
     defineField({
       name: 'isRecruiting',
-      title: '리쿠르팅 활성화',
+      title: '리크루팅 활성화',
       description:
-        '활성화하면 리쿠르팅 랜딩과 부서 네비게이션에서 상세 페이지에 접근할 수 있습니다.',
+        '활성화하면 리크루팅 랜딩과 부서 네비게이션에서 상세 페이지에 접근할 수 있습니다.',
       type: 'boolean',
       initialValue: false,
       validation: (rule) => rule.required(),

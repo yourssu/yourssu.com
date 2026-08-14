@@ -3,7 +3,7 @@ import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'recruitingPage',
-  title: '리쿠르팅 랜딩',
+  title: '리크루팅 랜딩',
   type: 'document',
   icon,
   fields: [
@@ -39,6 +39,6 @@ export default defineType({
     }),
   ],
   preview: {
-    prepare: () => ({ title: '리쿠르팅 랜딩' }),
+    prepare: () => ({ title: '리크루팅 랜딩' }),
   },
 });
