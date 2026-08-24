@@ -11,17 +11,20 @@ export default defineType({
       name: 'video_thumbnail',
       title: '영상 썸네일',
       type: 'image',
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'presenter',
       title: '발표자',
       type: 'array',
       of: [{ type: 'presenterContent' }],
+      validation: (rule) => rule.required().min(1),
     }),
     defineField({
       name: 'video_link',
       title: '영상 링크',
       type: 'url',
+      validation: (rule) => rule.required(),
     }),
   ],
   preview: {

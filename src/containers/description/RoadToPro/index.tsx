@@ -1,7 +1,10 @@
 import { GatsbyImage, getImage } from 'gatsby-plugin-image';
 import tw from 'tailwind-styled-components';
 
-import { RoadToProInformation } from '@/types/recruiting.type';
+import {
+  RoadToProInformation,
+  VideoInformation,
+} from '@/types/recruiting.type';
 
 import useRoadToProDetail from './hook';
 
@@ -11,22 +14,25 @@ interface RoadToProProps {
 
 function RoadToPro({ roadToPro }: RoadToProProps) {
   const data = useRoadToProDetail();
+  const videos =
+    roadToPro?.roadToPro_list?.filter((video): video is VideoInformation =>
+      Boolean(
+        video?.video_thumbnail?.asset?.gatsbyImageData &&
+        video.video_link &&
+        Array.isArray(video.presenter),
+      ),
+    ) ?? [];
 
   // roadToPro 정보가 없는 경우 해당 섹션을 보여주지 않음
-  if (
-    !roadToPro ||
-    !roadToPro.roadToPro_list ||
-    roadToPro.roadToPro_list.length === 0
-  )
-    return null;
+  if (videos.length === 0) return null;
 
   return (
     <section className="flex flex-col items-start gap-6 self-stretch rounded-[12px] border border-line-basicLight p-6 xs:p-5 sm:p-5">
       <div className="T3_Sb_20 sm:T2_Sb_18 xs:T2_Sb_18 text-text-basicPrimary">
-        Road to Pro
+        {roadToPro.title || 'Road to Pro'}
       </div>
       <VideoInfoContainer>
-        {roadToPro.roadToPro_list.map((video) => {
+        {videos.map((video) => {
           const thumbnail = getImage(
             video.video_thumbnail.asset.gatsbyImageData,
           );

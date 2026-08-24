@@ -11,9 +11,13 @@ import useApplyProcedureDetail from './hook';
 
 interface ApplyProcedureProps {
   applyProcedure: ApplyProcedureInformation[] | null;
+  title?: string;
 }
 
-function ApplyProcedure({ applyProcedure }: ApplyProcedureProps) {
+function ApplyProcedure({
+  applyProcedure,
+  title = '합류 여정',
+}: ApplyProcedureProps) {
   const data = useApplyProcedureDetail();
   const [isWarningOpen, setIsWarningOpen] = useState(false);
   const warningRef = useRef<HTMLDivElement>(null);
@@ -39,7 +43,7 @@ function ApplyProcedure({ applyProcedure }: ApplyProcedureProps) {
     <section className="inline-flex flex-col items-start justify-start gap-6 self-stretch rounded-[12px] p-6 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4] xs:p-5 sm:p-5">
       <TitleContainer>
         <div className="T3_Sb_20 sm:T2_Sb_18 xs:T2_Sb_18 text-text-basicPrimary">
-          합류 여정
+          {title}
         </div>
         {/* <NoticeButton
           type="button"
