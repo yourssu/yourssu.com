@@ -12,7 +12,7 @@ export interface RecruitingDepartmentReference {
   _id: string | null;
   basicInformation: {
     name: string | null;
-    isRecruiting: boolean | null;
+    isRecruiting?: boolean | null;
   } | null;
 }
 
