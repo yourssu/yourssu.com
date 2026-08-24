@@ -4,11 +4,11 @@ import mainPage from './Documents/mainPage';
 import recruitingPage from './Documents/recruitingPage';
 import recruitingSchedule from './Documents/recruitingSchedule';
 import roadToPro from './Documents/roadToPro';
+import { FAQItem } from './Types/FAQItem';
 import applyStepContent from './Types/applyStepContent';
+import article from './Types/article';
 import dateContent from './Types/dateContent';
-import defaultContent from './Types/defaultContent';
 import departmentSection from './Types/departmentSection';
-import inaWordContent from './Types/inaWordContent';
 import informationContent from './Types/informationContent';
 import { mainPageContentTypes } from './Types/mainPageContent';
 import presenterContent from './Types/presenterContent';
@@ -16,11 +16,6 @@ import { recruitingPageContentTypes } from './Types/recruitingPageContent';
 import recruitingScheduleContent, {
   recruitingScheduleDepartmentOverride,
 } from './Types/recruitingScheduleContent';
-import roadToProContent from './Types/roadToProContent';
-import skillContent from './Types/skillContent';
-import articleContent from './Types/articleContent';
-import article from './Types/article';
-import FAQContent, { FAQItem } from './Types/FAQContent';
 
 export const schemaTypes = [
   // Document types
@@ -34,19 +29,13 @@ export const schemaTypes = [
   // Other types
   ...mainPageContentTypes,
   ...recruitingPageContentTypes,
-  defaultContent,
-  departmentSection,
-  skillContent,
-  informationContent,
   applyStepContent,
-  roadToProContent,
-  inaWordContent,
+  article,
+  dateContent,
+  departmentSection,
+  FAQItem,
+  informationContent,
   presenterContent,
   recruitingScheduleContent,
   recruitingScheduleDepartmentOverride,
-  dateContent,
-  articleContent,
-  article,
-  FAQItem,
-  FAQContent,
 ];
