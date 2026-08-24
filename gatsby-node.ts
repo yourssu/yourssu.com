@@ -93,7 +93,6 @@ export const createPages: GatsbyNode['createPages'] = async ({
               _id
               basicInformation {
                 name
-                isRecruiting
               }
             }
             formSchedule {
@@ -109,7 +108,6 @@ export const createPages: GatsbyNode['createPages'] = async ({
                 _id
                 basicInformation {
                   name
-                  isRecruiting
                 }
               }
               formSchedule {
@@ -127,7 +125,6 @@ export const createPages: GatsbyNode['createPages'] = async ({
               _id
               basicInformation {
                 name
-                isRecruiting
               }
             }
             formSchedule {
@@ -143,7 +140,6 @@ export const createPages: GatsbyNode['createPages'] = async ({
                 _id
                 basicInformation {
                   name
-                  isRecruiting
                 }
               }
               formSchedule {
@@ -236,19 +232,9 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
     const { createTypes } = actions;
 
     const typeDefs = `
-    type SanityDefaultContent {
-      title: String
-      content: [String]
-    }
-
     type FAQItem {
       question: String
       answer: String
-    }
-
-    type SanityFAQContent {
-      title: String
-      FAQList: [FAQItem]
     }
 
     type SanityArticle {
@@ -257,11 +243,6 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
       author: String
       description: String
       image: String
-    }
-
-    type SanityArticleContent {
-      title: String
-      article: [SanityArticle]
     }
 
     type SanityDepartmentSection {
@@ -276,15 +257,8 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
     }
 
     type SanityDepartment implements Node {
-      contentSchemaVersion: Int
       sections: [SanityDepartmentSection]
       _rawSections: JSON
-      task: SanityDefaultContent
-      ideal: SanityDefaultContent
-      experience: SanityDefaultContent
-      growthAndDiff: SanityDefaultContent
-      FAQ: SanityFAQContent
-      medium: SanityArticleContent
     }
   `;
     createTypes(typeDefs);

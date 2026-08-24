@@ -5,24 +5,12 @@ import { useEffect, useState } from 'react';
 import ApplyButton from '@/components/Button/ApplyButton';
 import Layout from '@/components/Layout';
 import DepartmentSeo from '@/components/Seo/DepartmentSeo';
-import ApplyProcedure from '@/containers/description/ApplyProcedure';
 import DepartmentSection from '@/containers/description/DepartmentSection';
-import InaWord from '@/containers/description/InaWord';
-import InformationCard from '@/containers/description/Information/InformationCard';
-import Medium from '@/containers/description/Medium';
-import RoadToPro from '@/containers/description/RoadToPro';
 import SideNavigation from '@/containers/description/SideNavigation';
-import TeamFAQ from '@/containers/description/TeamFAQ';
 import TeamHeader from '@/containers/description/TeamHeader';
 import {
   BasicInformation,
-  DefaultContentInformation,
   DepartmentSectionInformation,
-  FAQInformation,
-  InaWordInformation,
-  MediumInformation,
-  RoadToProInformation,
-  SkillContentInformation,
 } from '@/types/recruiting.type';
 import isTodayInRange from '@/utils/isTodayInRange';
 
@@ -55,17 +43,7 @@ interface SanityDepartmentData {
       node: {
         _rawSections?: DepartmentSectionInformation[];
         basicInformation: BasicInformation;
-        contentSchemaVersion?: number;
         sections?: DepartmentSectionInformation[];
-        task: DefaultContentInformation;
-        ideal: DefaultContentInformation;
-        experience: DefaultContentInformation;
-        skill: SkillContentInformation;
-        roadToProVideo: RoadToProInformation;
-        growthAndDiff: DefaultContentInformation;
-        inaWord: InaWordInformation;
-        medium: MediumInformation;
-        FAQ: FAQInformation;
       };
     }[];
   };
@@ -92,11 +70,14 @@ function DescriptionTemplate({
   },
   pageContext: { name, teamList, formSchedule, procedure },
 }: DescriptionTemplateProps) {
-  const department = edges[0].node;
+  const department = edges[0]?.node;
+  if (!department?.sections?.length)
+    throw new Error(`Sanity에 ${name} 부서 상세 섹션이 없습니다.`);
+
   const rawSections = new Map(
     (department._rawSections ?? []).map((section) => [section._key, section]),
   );
-  const sections = department.sections?.map((section) => ({
+  const sections = department.sections.map((section) => ({
     ...section,
     body: rawSections.get(section._key)?.body,
   }));
@@ -115,31 +96,13 @@ function DescriptionTemplate({
       <div className="flex items-start justify-center gap-5 self-stretch bg-bg-basicDefault pb-20 pl-28 pr-28 pt-5 xs:px-0 sm:px-0">
         <div className="flex flex-1 items-start gap-5">
           <div className="flex flex-1 flex-col items-start justify-center gap-5">
-            {department.contentSchemaVersion === 2 ? (
-              sections?.map((section) => (
-                <DepartmentSection
-                  key={section._key}
-                  procedure={procedure}
-                  section={section}
-                />
-              ))
-            ) : (
-              <>
-                <InformationCard data={department.task} />
-                <InformationCard data={department.growthAndDiff} />
-                <InformationCard data={department.ideal} />
-                <InformationCard
-                  data={department.experience}
-                  description="아래 내용에 모두 해당하지 않아도 충분히 지원 가능해요"
-                />
-                <InformationCard data={department.skill} />
-                <ApplyProcedure applyProcedure={procedure} />
-                <InaWord inaWord={department.inaWord} />
-                <TeamFAQ data={department.FAQ} />
-                <RoadToPro roadToPro={department.roadToProVideo} />
-                <Medium medium={department.medium} />
-              </>
-            )}
+            {sections.map((section) => (
+              <DepartmentSection
+                key={section._key}
+                procedure={procedure}
+                section={section}
+              />
+            ))}
           </div>
           {/* 데스크탑용 사이드바: 모바일에서는 아예 사라짐 */}
           <div className="sticky top-[80px] flex h-fit w-72 flex-col items-start gap-5 xs:hidden sm:hidden md:hidden">
@@ -218,7 +181,6 @@ export const querySanityDataByName = graphql`
               }
             }
           }
-          contentSchemaVersion
           _rawSections
           sections {
             _key
@@ -238,63 +200,6 @@ export const querySanityDataByName = graphql`
               image
             }
             roadToProList {
-              video_thumbnail {
-                asset {
-                  gatsbyImageData(placeholder: BLURRED)
-                }
-              }
-              presenter {
-                presenter_nickname
-                presenter_name
-              }
-              video_link
-            }
-          }
-          task {
-            title
-            content
-          }
-          growthAndDiff {
-            title
-            content
-          }
-          ideal {
-            title
-            content
-          }
-          experience {
-            title
-            content
-          }
-          skill {
-            title
-            content
-            notice
-          }
-          inaWord {
-            title
-            word
-          }
-          FAQ {
-            title
-            FAQList {
-              question
-              answer
-            }
-          }
-          medium {
-            title
-            article {
-              url
-              title
-              author
-              description
-              image
-            }
-          }
-          roadToProVideo {
-            title
-            roadToPro_list {
               video_thumbnail {
                 asset {
                   gatsbyImageData(placeholder: BLURRED)

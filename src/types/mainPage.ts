@@ -9,7 +9,6 @@ interface Section<T> {
 }
 
 export interface MainPageData {
-  _id: string;
   hero: {
     title: string;
     images: SanityImage[];
@@ -24,7 +23,6 @@ export interface MainPageData {
     link: string;
   }>;
   missionVision: {
-    _key: string;
     subtitle: string;
     title: string;
     desktopDescription: string;

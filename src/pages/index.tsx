@@ -39,7 +39,6 @@ export const query = graphql`
   query HomePageQuery {
     allSanityMainPage(filter: { _id: { eq: "mainPage" } }, limit: 1) {
       nodes {
-        _id
         hero {
           title
           images {
@@ -66,7 +65,6 @@ export const query = graphql`
           }
         }
         missionVision {
-          _key
           subtitle
           title
           desktopDescription
