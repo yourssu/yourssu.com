@@ -6,14 +6,21 @@ const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
 });
 
-export default function LastUpdatedDisplay({ value }: DateTimeInputProps) {
+export default function LastUpdatedDisplay({
+  schemaType,
+  value,
+}: DateTimeInputProps) {
   return (
-    <output aria-live="polite">
-      {value ? (
-        <time dateTime={value}>{dateFormatter.format(new Date(value))}</time>
-      ) : (
-        '아직 사이트 반영 요청이 없습니다.'
-      )}
-    </output>
+    <div>
+      <strong>{schemaType.title}</strong>
+      {schemaType.description && <p>{schemaType.description}</p>}
+      <output aria-live="polite">
+        {value ? (
+          <time dateTime={value}>{dateFormatter.format(new Date(value))}</time>
+        ) : (
+          '아직 사이트 반영 요청이 없습니다.'
+        )}
+      </output>
+    </div>
   );
 }
