@@ -14,19 +14,8 @@ export default defineType({
       },
     }),
     defineField({
-      title: '번호',
-      name: 'key',
-      type: 'number',
-    }),
-    defineField({
       name: 'name',
       title: '부서 이름',
-      type: 'string',
-      description: '영어로 입력해주세요.',
-    }),
-    defineField({
-      name: 'sub_name',
-      title: '부서 이름 (축약)',
       type: 'string',
       description: '영어로 입력해주세요.',
     }),

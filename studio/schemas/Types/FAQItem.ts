@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity';
+import { defineType } from 'sanity';
 
 export const FAQItem = defineType({
   type: 'object',
@@ -22,23 +22,4 @@ export const FAQItem = defineType({
       title: 'question',
     },
   },
-});
-
-export default defineType({
-  name: 'FAQContent',
-  title: 'FAQ',
-  type: 'object',
-  fields: [
-    defineField({
-      name: 'title',
-      title: '제목',
-      type: 'string',
-    }),
-    defineField({
-      name: 'FAQList',
-      title: 'FAQ 목록',
-      type: 'array',
-      of: [{ type: 'FAQItem' }],
-    }),
-  ],
 });
