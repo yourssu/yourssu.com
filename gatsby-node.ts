@@ -264,7 +264,21 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
       article: [SanityArticle]
     }
 
+    type SanityDepartmentSection {
+      _key: String
+      kind: String
+      title: String
+      description: String
+      quoteText: String
+      faqList: [FAQItem]
+      roadToProList: [SanityRoadToPro]
+      articles: [SanityArticle]
+    }
+
     type SanityDepartment implements Node {
+      contentSchemaVersion: Int
+      sections: [SanityDepartmentSection]
+      _rawSections: JSON
       task: SanityDefaultContent
       ideal: SanityDefaultContent
       experience: SanityDefaultContent

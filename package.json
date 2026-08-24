@@ -15,6 +15,7 @@
     "clean": "gatsby clean",
     "typecheck": "tsc --noEmit",
     "check:recruiting-schedule": "pnpm exec tsx scripts/check-recruitingSchedule.ts",
+    "check:department-sections": "pnpm exec tsx studio/migrations/rs-mig-02-department-sections-backfill/check.ts",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
@@ -25,9 +26,9 @@
     "node": ">=24.0.0 <25.0.0"
   },
   "dependencies": {
+    "@portabletext/react": "^6.2.0",
     "@radix-ui/react-accordion": "^1.2.20",
     "dotenv": "^17.4.2",
-    "motion": "^13.1.0",
     "gatsby": "^5.16.1",
     "gatsby-plugin-google-tagmanager": "^5.16.0",
     "gatsby-plugin-image": "^3.16.0",
@@ -36,6 +37,7 @@
     "gatsby-source-filesystem": "^5.16.0",
     "gatsby-source-sanity": "^7.9.2",
     "gatsby-transformer-sharp": "^5.16.0",
+    "motion": "^13.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "tsconfig-paths-webpack-plugin": "^4.2.0"
@@ -53,6 +55,7 @@
     "postcss": "^8.5.26",
     "tailwind-styled-components": "^2.2.0",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.12",
     "typescript": "^6.0.3"
   },
   "packageManager": "pnpm@11.21.0+sha512.521705bce689924eac72f5a3587122f362689ef6571e55ba80076fd637c11132ecffada26fad4ea79c485bfddbfd3d5a2a5b05805a77e893de71ec8a6cca3bb1"

@@ -7,6 +7,7 @@ import roadToPro from './Documents/roadToPro';
 import applyStepContent from './Types/applyStepContent';
 import dateContent from './Types/dateContent';
 import defaultContent from './Types/defaultContent';
+import departmentSection from './Types/departmentSection';
 import inaWordContent from './Types/inaWordContent';
 import informationContent from './Types/informationContent';
 import { mainPageContentTypes } from './Types/mainPageContent';
@@ -34,6 +35,7 @@ export const schemaTypes = [
   ...mainPageContentTypes,
   ...recruitingPageContentTypes,
   defaultContent,
+  departmentSection,
   skillContent,
   informationContent,
   applyStepContent,
