@@ -35,15 +35,5 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('roadToPro').title('Road to Pro'),
             ]),
         ),
-      S.listItem()
-        .id('operations')
-        .title('운영')
-        .child(
-          S.list()
-            .id('operations-content')
-            .title('운영')
-            .items([
-              S.documentTypeListItem('buildTrigger').title('Last Update'),
-            ]),
-        ),
+      singleton(S, '사이트 반영', 'buildTrigger', 'buildTrigger'),
     ]);
