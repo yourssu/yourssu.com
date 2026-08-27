@@ -1,6 +1,8 @@
 import { Link } from 'gatsby';
 import tw from 'tailwind-styled-components';
 
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdContactClick, trackJdToFaqClick } from '@/analytics/events';
 import ApplyButton from '@/components/Button/ApplyButton';
 
 import { ArrowLeft } from './ArrowLeft';
@@ -13,6 +15,7 @@ interface SideNavigationProps {
     name: string;
     isApplicationOpen: boolean;
     applyLink: string;
+    teamName: JdTeamName;
   };
   teamList: { name: string; isRecruiting: boolean }[];
 }
@@ -53,10 +56,12 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
       <ApplyButton
         link={currentTeam.applyLink}
         isApplicationOpen={currentTeam.isApplicationOpen}
+        teamName={currentTeam.teamName}
       />
       <div className="flex w-full gap-5">
         <Link
           to="/recruiting/#faq"
+          onClick={() => trackJdToFaqClick({ team_name: currentTeam.teamName })}
           className="inline-flex h-[130px] flex-1 flex-col items-center justify-between self-stretch overflow-hidden rounded-[12px] pt-3 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4]"
         >
           <div className="B3_Sb_14 mb-[1px] items-center text-gray1-0">
@@ -68,6 +73,9 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
           href={KAKAO_LINK}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            trackJdContactClick({ team_name: currentTeam.teamName })
+          }
           className="inline-flex h-[130px] flex-1 flex-col items-center justify-between self-stretch overflow-hidden rounded-[12px] pt-3 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4]"
         >
           <div className="B3_Sb_14 mb-[1px] items-center text-gray1-0">

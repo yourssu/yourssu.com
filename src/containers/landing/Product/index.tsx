@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 
+import { getTfName } from '@/analytics/contracts';
+import { trackMainTfCardClick } from '@/analytics/events';
 import MainTitle from '@/components/Title/MainTitle';
 import { MainPageData } from '@/types/mainPage';
 
@@ -87,7 +89,15 @@ function Product({ data }: ProductProps) {
             >
               {data.items.map((product) => (
                 <div key={product._key} className="w-[332px] flex-shrink-0">
-                  <a href={product.link} target="_blank" rel="noreferrer">
+                  <a
+                    href={product.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => {
+                      const tfName = getTfName(product._key);
+                      if (tfName) trackMainTfCardClick({ tf_name: tfName });
+                    }}
+                  >
                     <ProductCard
                       title={product.title}
                       description={product.description}

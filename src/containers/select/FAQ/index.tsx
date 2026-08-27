@@ -24,7 +24,12 @@ function FAQ({ data }: FAQProps) {
         className="flex w-full flex-col items-stretch gap-5"
       >
         {data.items.map((item) => (
-          <QuestionCard key={item._key} {...item} />
+          <QuestionCard
+            key={item._key}
+            {...item}
+            faqKey={item._key}
+            pageType="recruiting"
+          />
         ))}
       </Accordion.Root>
     </RecruitSectionLayout>

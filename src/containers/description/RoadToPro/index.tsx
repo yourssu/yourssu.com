@@ -1,6 +1,8 @@
 import { GatsbyImage, getImage } from 'gatsby-plugin-image';
 import tw from 'tailwind-styled-components';
 
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdExternalContentCardClick } from '@/analytics/events';
 import {
   RoadToProInformation,
   VideoInformation,
@@ -10,9 +12,10 @@ import useRoadToProDetail from './hook';
 
 interface RoadToProProps {
   roadToPro: RoadToProInformation;
+  teamName: JdTeamName;
 }
 
-function RoadToPro({ roadToPro }: RoadToProProps) {
+function RoadToPro({ roadToPro, teamName }: RoadToProProps) {
   const data = useRoadToProDetail();
   const videos =
     roadToPro?.roadToPro_list?.filter((video): video is VideoInformation =>
@@ -42,6 +45,13 @@ function RoadToPro({ roadToPro }: RoadToProProps) {
                 href={video.video_link}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() =>
+                  trackJdExternalContentCardClick({
+                    content_type: 'youtube',
+                    page_type: 'jd',
+                    team_name: teamName,
+                  })
+                }
               >
                 {thumbnail && <Thumbnail image={thumbnail} alt="thumbnail" />}
                 <Gradient src={data.gradientImg.publicURL} alt="gradient" />

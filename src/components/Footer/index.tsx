@@ -1,5 +1,7 @@
 import tw from 'tailwind-styled-components';
 
+import { type SocialContentType } from '@/analytics/contracts';
+import { trackFooterSocialIconClick } from '@/analytics/events';
 import githubIcon from '@/assets/socials/github.svg';
 import instagramIcon from '@/assets/socials/instagram.svg';
 import kakaotalkIcon from '@/assets/socials/kakaotalk.svg';
@@ -10,19 +12,36 @@ interface Props {
 }
 
 function Footer({ backgroundColor }: Props) {
-  const socialData = [
+  const socialData: {
+    contentType: SocialContentType;
+    href: string;
+    icon: string;
+    name: string;
+  }[] = [
     {
+      contentType: 'kakao',
       name: 'kakaotalk',
       icon: kakaotalkIcon,
       href: 'http://pf.kakao.com/_AxfrxeT',
     },
-    { name: 'github', icon: githubIcon, href: 'https://github.com/yourssu' },
     {
+      contentType: 'github',
+      name: 'github',
+      icon: githubIcon,
+      href: 'https://github.com/yourssu',
+    },
+    {
+      contentType: 'instagram',
       name: 'instagram',
       icon: instagramIcon,
       href: 'https://www.instagram.com/yourssu_official',
     },
-    { name: 'medium', icon: mediumIcon, href: 'https://medium.com/yourssu' },
+    {
+      contentType: 'medium',
+      name: 'medium',
+      icon: mediumIcon,
+      href: 'https://medium.com/yourssu',
+    },
   ];
 
   const background: { [key: string]: string } = {
@@ -43,6 +62,11 @@ function Footer({ backgroundColor }: Props) {
               href={item.href}
               target="_blank"
               rel="noreferrer"
+              onClick={() =>
+                trackFooterSocialIconClick({
+                  content_type: item.contentType,
+                })
+              }
             >
               <img src={item.icon} alt={item.name} />
             </SocialLink>

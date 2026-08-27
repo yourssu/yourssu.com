@@ -233,6 +233,7 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
 
     const typeDefs = `
     type FAQItem {
+      _key: String
       question: String
       answer: String
     }

@@ -1,5 +1,7 @@
 import { Link } from 'gatsby';
 
+import { getRecruitingTeamName } from '@/analytics/contracts';
+import { trackRecruitingJdCardClick } from '@/analytics/events';
 import RecruitSectionLayout from '@/components/Layout/RecruitSectionLayout';
 import RecruitTitle from '@/components/Title/RecruitTitle';
 import { RecruitingPageData } from '@/types/recruitingPage';
@@ -52,6 +54,12 @@ function Supporting({ data }: SupportingProps) {
               to={name.toLowerCase().replaceAll(' ', '_')}
               key={_key}
               className="flex items-center justify-between rounded-[0.75rem] border border-line-basicLight p-6 xs:p-5 sm:p-5"
+              onClick={() => {
+                const teamName = getRecruitingTeamName(name);
+                if (teamName) {
+                  trackRecruitingJdCardClick({ team_name: teamName });
+                }
+              }}
             >
               <h3 className="whitespace-pre-wrap text-2xl font-semibold text-text-basicSecondary">
                 {name.replace(' ', '\n')}

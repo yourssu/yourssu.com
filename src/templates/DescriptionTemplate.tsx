@@ -2,6 +2,8 @@ import { graphql, Link } from 'gatsby';
 import { useBreakpoint } from 'gatsby-plugin-breakpoints';
 import { useEffect, useState } from 'react';
 
+import { getJdTeamNameFromDepartmentName } from '@/analytics/contracts';
+import { trackJdContactClick, trackJdToFaqClick } from '@/analytics/events';
 import ApplyButton from '@/components/Button/ApplyButton';
 import Layout from '@/components/Layout';
 import DepartmentSeo from '@/components/Seo/DepartmentSeo';
@@ -20,10 +22,12 @@ function ExternalLink({
   children,
   className,
   href,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
   href: string;
+  onClick?: () => void;
 }) {
   return (
     <a
@@ -31,6 +35,7 @@ function ExternalLink({
       href={href}
       rel="noopener noreferrer"
       target="_blank"
+      onClick={onClick}
     >
       {children}
     </a>
@@ -83,6 +88,7 @@ function DescriptionTemplate({
   }));
   const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const breakpoints = useBreakpoint();
+  const teamName = getJdTeamNameFromDepartmentName(name);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && formSchedule) {
@@ -101,6 +107,7 @@ function DescriptionTemplate({
                 key={section._key}
                 procedure={procedure}
                 section={section}
+                teamName={teamName}
               />
             ))}
           </div>
@@ -112,6 +119,7 @@ function DescriptionTemplate({
                   name,
                   isApplicationOpen,
                   applyLink: department.basicInformation.apply_link,
+                  teamName,
                 }}
                 teamList={teamList}
               />
@@ -125,11 +133,13 @@ function DescriptionTemplate({
           <ApplyButton
             link={department.basicInformation.apply_link}
             isApplicationOpen={isApplicationOpen}
+            teamName={teamName}
           />
           <div className="body8 flex flex-row-reverse gap-2 text-gray1-0">
             <Link
               to="/recruiting/#faq"
               className="flex w-fit flex-col items-center"
+              onClick={() => trackJdToFaqClick({ team_name: teamName })}
             >
               <div className="mb-[1px] items-center">FAQ 보러가기</div>
             </Link>
@@ -137,6 +147,7 @@ function DescriptionTemplate({
             <ExternalLink
               className="flex w-fit flex-col items-center"
               href={KAKAO_LINK}
+              onClick={() => trackJdContactClick({ team_name: teamName })}
             >
               <div className="mb-[1px] items-center">문의하기</div>
             </ExternalLink>
@@ -189,6 +200,7 @@ export const querySanityDataByName = graphql`
             description
             quoteText
             faqList {
+              _key
               question
               answer
             }

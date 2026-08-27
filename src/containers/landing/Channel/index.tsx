@@ -1,4 +1,5 @@
 import { MainPageData } from '@/types/mainPage';
+import { getMainContentAnalytics } from '@/analytics/contracts';
 
 import { ContentsCard } from './ContentsCard';
 
@@ -22,6 +23,7 @@ function Channel({ data }: ChannelProps) {
             tagNames={channel.tags}
             imageUrl={channel.image.asset.url}
             contentUrl={channel.link}
+            analytics={getMainContentAnalytics(channel._key)}
           />
         ))}
       </div>

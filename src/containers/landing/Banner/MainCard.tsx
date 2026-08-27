@@ -1,6 +1,7 @@
 import { navigate } from 'gatsby';
 import { useState, useEffect } from 'react';
 
+import { trackMainRecruitingCtaClick } from '@/analytics/events';
 import { BoxButton } from '@/components/Button/BoxButton';
 
 interface MainCardProps {
@@ -53,7 +54,15 @@ export function MainCard({
           {text}
         </span>
         <div className="self-end">
-          <BoxButton onClick={() => navigate(buttonLink)}>
+          <BoxButton
+            onClick={() => {
+              trackMainRecruitingCtaClick({
+                cta_label: 'view_positions',
+                cta_location: 'hero',
+              });
+              navigate(buttonLink);
+            }}
+          >
             {buttonText}
           </BoxButton>
         </div>

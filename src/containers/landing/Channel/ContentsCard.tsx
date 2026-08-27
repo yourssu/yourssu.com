@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import type { MainContentAnalytics } from '@/analytics/contracts';
+import { trackMainRecruitingContentCardClick } from '@/analytics/events';
 import { Tag } from '@/components/Tag/Tag';
 
 interface ContentsCardProps {
@@ -7,6 +9,7 @@ interface ContentsCardProps {
   tagNames: string[];
   imageUrl: string;
   contentUrl: string;
+  analytics?: MainContentAnalytics;
 }
 
 export function ContentsCard({
@@ -14,6 +17,7 @@ export function ContentsCard({
   tagNames,
   imageUrl,
   contentUrl,
+  analytics,
 }: ContentsCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   return (
@@ -22,6 +26,9 @@ export function ContentsCard({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={title}
+      onClick={() => {
+        if (analytics) trackMainRecruitingContentCardClick(analytics);
+      }}
     >
       <div
         className="inline-flex flex-col items-start justify-center gap-[20px]"

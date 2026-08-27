@@ -1,6 +1,7 @@
 import { Link } from 'gatsby';
 import { useState } from 'react';
 
+import { trackMainRecruitingCtaClick } from '@/analytics/events';
 import useHeaderDetail from '@/components/Header/hook';
 
 interface Props {
@@ -13,6 +14,15 @@ function Header({ isMainPage }: Props) {
   // const logoData = data.logo.nodes[0];
   const listIconData = data.listIcon.nodes[0];
   const xIconData = data.xIcon.nodes[0];
+
+  const trackRecruitingClick = () => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+      trackMainRecruitingCtaClick({
+        cta_label: 'recruiting',
+        cta_location: 'header_nav',
+      });
+    }
+  };
 
   return (
     <header
@@ -36,7 +46,7 @@ function Header({ isMainPage }: Props) {
               MAIN
             </p>
           </Link>
-          <Link to="/recruiting">
+          <Link to="/recruiting" onClick={trackRecruitingClick}>
             <p
               className={`B1_Rg_16 !font-bold ${
                 isMainPage
@@ -73,6 +83,7 @@ function Header({ isMainPage }: Props) {
           </Link>
           <Link
             to="/recruiting"
+            onClick={trackRecruitingClick}
             className={`B1_Rg_16 p-5 !font-bold ${isMainPage ? 'text-text-basicTertiary' : 'text-text-basicSecondary'}`}
           >
             RECRUITING

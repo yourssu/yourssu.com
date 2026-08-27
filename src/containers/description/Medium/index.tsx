@@ -1,10 +1,13 @@
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdExternalContentCardClick } from '@/analytics/events';
 import { MediumInformation } from '@/types/recruiting.type';
 
 interface MediumProps {
   medium: MediumInformation;
+  teamName: JdTeamName;
 }
 
-function Medium({ medium }: MediumProps) {
+function Medium({ medium, teamName }: MediumProps) {
   // 데이터가 없거나 글 목록이 비어있으면 미디엄 섹션을 보여주지 않음
   if (!medium || !medium.article || medium.article.length === 0) return null;
 
@@ -19,6 +22,13 @@ function Medium({ medium }: MediumProps) {
           target="_blank"
           rel="noopener noreferrer"
           key={item.title}
+          onClick={() =>
+            trackJdExternalContentCardClick({
+              content_type: 'medium',
+              page_type: 'jd',
+              team_name: teamName,
+            })
+          }
           className="flex items-center gap-5 self-stretch xs:flex-col xs:items-start sm:flex-col sm:items-start"
         >
           <img
