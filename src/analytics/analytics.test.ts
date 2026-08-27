@@ -63,6 +63,22 @@ test('the explicit event API contains the complete 17-event contract', () => {
   ]);
 });
 
+test('Gatsby browser configuration references every analytics variable directly', () => {
+  const source = readFileSync(new URL('./posthog.ts', import.meta.url), 'utf8');
+  const browserEnvironmentVariables = [
+    'GATSBY_APP_POSTHOG_DEPLOYMENT_ENV',
+    'GATSBY_APP_POSTHOG_HOST',
+    'GATSBY_APP_POSTHOG_KEY',
+    'GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED',
+    'GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED',
+  ];
+
+  assert.doesNotMatch(source, /getAnalyticsConfig\(process\.env\)/);
+  for (const variable of browserEnvironmentVariables) {
+    assert.match(source, new RegExp(`process\\.env\\.${variable}`));
+  }
+});
+
 test('capture is opt-in and production has an independent safety lock', () => {
   assert.deepEqual(getAnalyticsConfig({ NODE_ENV: 'development' }), {
     deploymentEnvironment: 'development',

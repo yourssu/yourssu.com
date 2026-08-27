@@ -1,6 +1,9 @@
 import posthog, { type Properties } from 'posthog-js';
 
-import { getAnalyticsConfig } from '@/analytics/config';
+import {
+  type AnalyticsEnvironment,
+  getAnalyticsConfig,
+} from '@/analytics/config';
 import { TRACKING_SOURCE, TRACKING_VERSION } from '@/analytics/contracts';
 import { sanitizeCapturedUrls } from '@/analytics/url';
 
@@ -17,6 +20,22 @@ function setGlobalState(state: AnalyticsState) {
   (globalThis as Record<string, unknown>)[GLOBAL_STATE_KEY] = state;
 }
 
+function getBrowserAnalyticsEnvironment(): AnalyticsEnvironment {
+  // Gatsby only exposes GATSBY_* variables that are referenced directly.
+  // Passing process.env as a whole is compiled to an empty object in the browser.
+  return {
+    GATSBY_APP_POSTHOG_DEPLOYMENT_ENV:
+      process.env.GATSBY_APP_POSTHOG_DEPLOYMENT_ENV,
+    GATSBY_APP_POSTHOG_HOST: process.env.GATSBY_APP_POSTHOG_HOST,
+    GATSBY_APP_POSTHOG_KEY: process.env.GATSBY_APP_POSTHOG_KEY,
+    GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED:
+      process.env.GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED,
+    GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED:
+      process.env.GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED,
+    NODE_ENV: process.env.NODE_ENV,
+  };
+}
+
 export function initPostHog() {
   if (typeof window === 'undefined') return false;
 
@@ -24,7 +43,7 @@ export function initPostHog() {
   if (currentState === 'initialized') return true;
   if (currentState === 'disabled') return false;
 
-  const config = getAnalyticsConfig(process.env);
+  const config = getAnalyticsConfig(getBrowserAnalyticsEnvironment());
   if (!config.enabled) {
     setGlobalState('disabled');
     return false;
