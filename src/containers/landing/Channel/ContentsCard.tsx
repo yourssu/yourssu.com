@@ -9,6 +9,8 @@ interface ContentsCardProps {
   tagNames: string[];
   imageUrl: string;
   contentUrl: string;
+  contentId: string;
+  contentPosition: number;
   analytics?: MainContentAnalytics;
 }
 
@@ -17,6 +19,8 @@ export function ContentsCard({
   tagNames,
   imageUrl,
   contentUrl,
+  contentId,
+  contentPosition,
   analytics,
 }: ContentsCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -27,7 +31,13 @@ export function ContentsCard({
       rel="noopener noreferrer"
       aria-label={title}
       onClick={() => {
-        if (analytics) trackMainRecruitingContentCardClick(analytics);
+        if (analytics) {
+          trackMainRecruitingContentCardClick({
+            ...analytics,
+            content_id: contentId,
+            content_position: contentPosition,
+          });
+        }
       }}
     >
       <div

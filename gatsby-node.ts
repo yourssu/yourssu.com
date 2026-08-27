@@ -183,6 +183,11 @@ export const createPages: GatsbyNode['createPages'] = async ({
       .filter((id): id is string => Boolean(id)),
   );
   validateRecruitingSchedule(schedule, knownDepartmentIds);
+  const recruitmentCycleId = schedule._id;
+  if (!recruitmentCycleId) {
+    reporter.panicOnBuild('Active recruiting schedule is missing its ID');
+    return;
+  }
   const DescriptionTemplateComponent = path.resolve(
     __dirname,
     'src/templates/DescriptionTemplate.tsx',
@@ -214,6 +219,7 @@ export const createPages: GatsbyNode['createPages'] = async ({
       component: DescriptionTemplateComponent,
       context: {
         name,
+        recruitmentCycleId,
         teamList,
         formSchedule: recruiting.formSchedule,
         procedure: recruiting.procedure,
@@ -239,6 +245,7 @@ export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] 
     }
 
     type SanityArticle {
+      _key: String
       url: String
       title: String
       author: String

@@ -12,12 +12,14 @@ import {
 
 interface DepartmentSectionProps {
   procedure: ApplyProcedureInformation[] | null;
+  recruitmentCycleId: string;
   section: DepartmentSectionInformation;
   teamName: JdTeamName;
 }
 
 function DepartmentSection({
   procedure,
+  recruitmentCycleId,
   section,
   teamName,
 }: DepartmentSectionProps) {
@@ -36,6 +38,7 @@ function DepartmentSection({
       return section.faqList?.length ? (
         <TeamFAQ
           data={{ FAQList: section.faqList, title: section.title }}
+          recruitmentCycleId={recruitmentCycleId}
           teamName={teamName}
         />
       ) : null;
@@ -46,6 +49,7 @@ function DepartmentSection({
             roadToPro_list: section.roadToProList,
             title: section.title,
           }}
+          recruitmentCycleId={recruitmentCycleId}
           teamName={teamName}
         />
       ) : null;
@@ -53,6 +57,7 @@ function DepartmentSection({
       return section.articles?.length ? (
         <Medium
           medium={{ article: section.articles, title: section.title }}
+          recruitmentCycleId={recruitmentCycleId}
           teamName={teamName}
         />
       ) : null;

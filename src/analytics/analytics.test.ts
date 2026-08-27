@@ -5,12 +5,14 @@ import test from 'node:test';
 import { getAnalyticsConfig } from '@/analytics/config';
 import {
   classifyPage,
+  getFaqToggleAction,
   getJdTeamNameFromDepartmentName,
   getJdTeamNameFromPathname,
   getMainContentAnalytics,
   getRecruitingTeamName,
   getTfName,
 } from '@/analytics/contracts';
+import { createRecruitingJdCardImpressionTracker } from '@/analytics/recruitingImpression';
 import { createRouteEventTracker } from '@/analytics/routeTracking';
 import { createScrollThresholdTracker } from '@/analytics/scrollDepth';
 import { initializeSessionUtm, type SessionStorageLike } from '@/analytics/utm';
@@ -34,7 +36,7 @@ class MemorySessionStorage implements SessionStorageLike {
   }
 }
 
-test('the explicit event API contains the complete 17-event contract', () => {
+test('the explicit event API contains the complete 19-event contract', () => {
   const source = readFileSync(new URL('./events.ts', import.meta.url), 'utf8');
   const capturedEventNames = [
     ...source.matchAll(/captureNativeEvent\('([^']+)'/g),
@@ -57,9 +59,67 @@ test('the explicit event API contains the complete 17-event contract', () => {
     'main_recruiting_cta_click',
     'main_scroll_depth_reached',
     'main_tf_card_click',
+    'recruiting_contact_click',
     'recruiting_jd_card_click',
+    'recruiting_jd_card_impression',
     'recruiting_page_viewed',
     'recruiting_scroll_depth_reached',
+  ]);
+});
+
+test('the enriched explicit event functions require their analytics properties', () => {
+  const source = readFileSync(new URL('./events.ts', import.meta.url), 'utf8');
+  const propertyBlocks = new Map<string, string>();
+  for (const match of source.matchAll(
+    /export function (\w+)\(properties: \{([\s\S]*?)\n\}\) \{/g,
+  )) {
+    propertyBlocks.set(match[1], match[2]);
+  }
+
+  const expectProperties = (functionName: string, properties: string[]) => {
+    const block = propertyBlocks.get(functionName);
+    assert.ok(block, `${functionName} has an explicit property contract`);
+    for (const property of properties) {
+      assert.match(block, new RegExp(`\\b${property}:`), functionName);
+    }
+  };
+
+  for (const functionName of [
+    'trackFaqToggleClick',
+    'trackJdApplyClick',
+    'trackJdContactClick',
+    'trackJdExternalContentCardClick',
+    'trackJdPageViewed',
+    'trackJdScrollDepthReached',
+    'trackJdToFaqClick',
+    'trackRecruitingContactClick',
+    'trackRecruitingJdCardClick',
+    'trackRecruitingJdCardImpression',
+    'trackRecruitingPageViewed',
+    'trackRecruitingScrollDepthReached',
+  ]) {
+    expectProperties(functionName, ['recruitment_cycle_id']);
+  }
+
+  for (const functionName of [
+    'trackJdApplyClick',
+    'trackJdContactClick',
+    'trackJdToFaqClick',
+  ]) {
+    expectProperties(functionName, ['cta_location']);
+  }
+
+  for (const functionName of [
+    'trackJdExternalContentCardClick',
+    'trackMainRecruitingContentCardClick',
+  ]) {
+    expectProperties(functionName, ['content_id', 'content_position']);
+  }
+
+  expectProperties('trackFaqToggleClick', ['faq_position', 'toggle_action']);
+  expectProperties('trackRecruitingJdCardImpression', [
+    'card_position',
+    'team_name',
   ]);
 });
 
@@ -164,6 +224,100 @@ test('Sanity keys map cards without inspecting rendered text or URLs', () => {
   assert.equal(getMainContentAnalytics('unknown'), undefined);
 });
 
+test('FAQ actions are derived from the pre-click accordion state', () => {
+  assert.equal(getFaqToggleAction('closed'), 'open');
+  assert.equal(getFaqToggleAction('open'), 'close');
+  assert.equal(getFaqToggleAction(undefined), undefined);
+});
+
+test('recruiting card impressions require 50% visibility and fire once per path and card', () => {
+  const tracker = createRecruitingJdCardImpressionTracker();
+  const candidate = {
+    cardId: 'sanity-card-key',
+    isIntersecting: true,
+    pathname: '/recruiting/',
+  };
+
+  assert.equal(
+    tracker.shouldCapture({ ...candidate, intersectionRatio: 0.499 }),
+    false,
+  );
+  assert.equal(
+    tracker.shouldCapture({ ...candidate, intersectionRatio: 0.5 }),
+    true,
+  );
+  assert.equal(
+    tracker.shouldCapture({ ...candidate, intersectionRatio: 1 }),
+    false,
+  );
+  assert.equal(
+    tracker.shouldCapture({
+      ...candidate,
+      cardId: 'another-card-key',
+      intersectionRatio: 0.5,
+    }),
+    true,
+  );
+  assert.equal(
+    tracker.shouldCapture({
+      ...candidate,
+      intersectionRatio: 0.5,
+      pathname: '/recruiting/preview',
+    }),
+    true,
+  );
+});
+
+test('content click handlers wrap each full rendered card', () => {
+  const cases = [
+    {
+      closingTag: '</a>',
+      contentMarkers: ['src={imageUrl}', '{title}', 'tagNames.map'],
+      eventName: 'trackMainRecruitingContentCardClick',
+      file: '../containers/landing/Channel/ContentsCard.tsx',
+      openingTag: '<a',
+    },
+    {
+      closingTag: '</a>',
+      contentMarkers: [
+        'src={item.image}',
+        '{item.title}',
+        '{item.description}',
+      ],
+      eventName: 'trackJdExternalContentCardClick',
+      file: '../containers/description/Medium/index.tsx',
+      openingTag: '<a',
+    },
+    {
+      closingTag: '</ContentCard>',
+      contentMarkers: ['<Thumbnail', 'video.presenter'],
+      eventName: 'trackJdExternalContentCardClick',
+      file: '../containers/description/RoadToPro/index.tsx',
+      openingTag: '<ContentCard',
+    },
+  ];
+
+  for (const testCase of cases) {
+    const source = readFileSync(
+      new URL(testCase.file, import.meta.url),
+      'utf8',
+    );
+    const openingIndex = source.indexOf(testCase.openingTag);
+    const closingIndex = source.indexOf(testCase.closingTag, openingIndex);
+    const eventIndex = source.indexOf(testCase.eventName, openingIndex);
+
+    assert.notEqual(openingIndex, -1, `${testCase.file}: full-card link`);
+    assert.ok(eventIndex > openingIndex && eventIndex < closingIndex);
+    for (const marker of testCase.contentMarkers) {
+      const markerIndex = source.indexOf(marker, openingIndex);
+      assert.ok(
+        markerIndex > openingIndex && markerIndex < closingIndex,
+        `${testCase.file}: ${marker} is inside the tracked link`,
+      );
+    }
+  }
+});
+
 test('UTM context is captured from the first entry and retained for the tab session', () => {
   const storage = new MemorySessionStorage();
   const first = initializeSessionUtm(
@@ -238,26 +392,41 @@ test('a new PostHog session starts a fresh UTM context', () => {
 test('route tracking fires once per pathname and fires again after returning', () => {
   const captured: string[] = [];
   const trackRoute = createRouteEventTracker({
-    jdPageViewed: (teamName) => captured.push(`jd:${teamName}`),
+    jdPageViewed: (teamName, cycleId) =>
+      captured.push(`jd:${teamName}:${cycleId}`),
     mainPageViewed: () => captured.push('main'),
-    pageViewed: (pageType) => captured.push(`$pageview:${pageType}`),
-    recruitingPageViewed: () => captured.push('recruiting'),
+    pageViewed: (pageType, _location, cycleId) =>
+      captured.push(`$pageview:${pageType}:${cycleId ?? 'none'}`),
+    recruitingPageViewed: (cycleId) => captured.push(`recruiting:${cycleId}`),
   });
 
   assert.equal(trackRoute({ pathname: '/', search: '?utm_source=test' }), true);
   assert.equal(trackRoute({ pathname: '/', search: '?different=true' }), false);
-  assert.equal(trackRoute({ pathname: '/recruiting/' }), true);
-  assert.equal(trackRoute({ pathname: '/recruiting/product_designer' }), true);
+  assert.equal(trackRoute({ pathname: '/recruiting/' }), false);
+  assert.equal(
+    trackRoute(
+      { pathname: '/recruiting/' },
+      { recruitmentCycleId: 'recruiting-schedule-2026-2' },
+    ),
+    true,
+  );
+  assert.equal(
+    trackRoute(
+      { pathname: '/recruiting/product_designer' },
+      { recruitmentCycleId: 'recruiting-schedule-2026-2' },
+    ),
+    true,
+  );
   assert.equal(trackRoute({ pathname: '/' }), true);
 
   assert.deepEqual(captured, [
-    '$pageview:main',
+    '$pageview:main:none',
     'main',
-    '$pageview:recruiting',
-    'recruiting',
-    '$pageview:jd',
-    'jd:design',
-    '$pageview:main',
+    '$pageview:recruiting:recruiting-schedule-2026-2',
+    'recruiting:recruiting-schedule-2026-2',
+    '$pageview:jd:recruiting-schedule-2026-2',
+    'jd:design:recruiting-schedule-2026-2',
+    '$pageview:main:none',
     'main',
   ]);
 });

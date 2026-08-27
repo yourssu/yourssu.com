@@ -30,6 +30,8 @@ export type MainContentCategory = '' | 'design' | 'hr' | 'ios';
 export type MainContentType = 'instagram' | 'medium' | 'youtube';
 export type TfName = 'signal' | 'soongsil_life' | 'ssutime';
 export type ScrollPercent = 50 | 70 | 90;
+export type FaqToggleAction = 'close' | 'open';
+export type JdCtaLocation = 'desktop_sidebar' | 'mobile_sticky';
 
 const RECRUITING_TEAM_BY_DISPLAY_NAME: Record<string, RecruitingTeamName> = {
   'Android Engineer': 'android',
@@ -110,6 +112,14 @@ export function getRecruitingTeamName(
 
 export function getTfName(itemKey: string): TfName | undefined {
   return TF_NAME_BY_KEY[itemKey];
+}
+
+export function getFaqToggleAction(
+  currentState: string | undefined,
+): FaqToggleAction | undefined {
+  if (currentState === 'closed') return 'open';
+  if (currentState === 'open') return 'close';
+  return undefined;
 }
 
 export function normalizePathname(pathname: string) {

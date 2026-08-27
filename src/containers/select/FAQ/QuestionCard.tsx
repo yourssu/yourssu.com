@@ -1,7 +1,11 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import tw from 'tailwind-styled-components';
 
-import type { JdTeamName, PageType } from '@/analytics/contracts';
+import {
+  getFaqToggleAction,
+  type JdTeamName,
+  type PageType,
+} from '@/analytics/contracts';
 import { trackFaqToggleClick } from '@/analytics/events';
 import smallArrowImg from '@/assets/icons/smallarrow-left.svg';
 
@@ -11,15 +15,21 @@ export default function QuestionCard({
   question,
   answer,
   faqKey,
+  faqPosition,
   link,
+  onAnswerLinkClick,
   pageType,
+  recruitmentCycleId,
   teamName,
 }: {
   question: string;
   answer: string;
   faqKey: string;
+  faqPosition: number;
   link?: { label: string; href: string };
+  onAnswerLinkClick?: () => void;
   pageType: PageType;
+  recruitmentCycleId: string;
   teamName?: JdTeamName;
 }) {
   const renderBoldText = (text: string) => {
@@ -41,13 +51,21 @@ export default function QuestionCard({
         <Accordion.Header>
           <Accordion.Trigger
             className="group flex w-full items-center justify-between"
-            onClick={() =>
+            onClick={(event) => {
+              const toggleAction = getFaqToggleAction(
+                event.currentTarget.dataset.state,
+              );
+              if (!toggleAction) return;
+
               trackFaqToggleClick({
                 faq_key: faqKey,
+                faq_position: faqPosition,
                 page_type: pageType,
+                recruitment_cycle_id: recruitmentCycleId,
                 ...(teamName ? { team_name: teamName } : {}),
-              })
-            }
+                toggle_action: toggleAction,
+              });
+            }}
           >
             <div className="flex items-center gap-[12px] text-left xs:gap-[8px] sm:gap-[8px]">
               <div className="relative h-6 w-6 flex-shrink-0">
@@ -78,6 +96,7 @@ export default function QuestionCard({
                   className="underline"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={onAnswerLinkClick}
                 >
                   {link.label}
                 </a>

@@ -58,6 +58,7 @@ interface DescriptionTemplateProps {
   data: SanityDepartmentData;
   pageContext: {
     name: string;
+    recruitmentCycleId: string;
     teamList: { name: string; isRecruiting: boolean }[];
     formSchedule: { start: Date | null; end: Date | null } | null;
     procedure:
@@ -73,7 +74,7 @@ function DescriptionTemplate({
   data: {
     allSanityDepartment: { edges },
   },
-  pageContext: { name, teamList, formSchedule, procedure },
+  pageContext: { name, recruitmentCycleId, teamList, formSchedule, procedure },
 }: DescriptionTemplateProps) {
   const department = edges[0]?.node;
   if (!department?.sections?.length)
@@ -98,6 +99,11 @@ function DescriptionTemplate({
 
   return (
     <Layout isMainPage={true}>
+      <span
+        hidden
+        aria-hidden="true"
+        data-recruitment-cycle-id={recruitmentCycleId}
+      />
       <TeamHeader name={name} basicInformation={department.basicInformation} />
       <div className="flex items-start justify-center gap-5 self-stretch bg-bg-basicDefault pb-20 pl-28 pr-28 pt-5 xs:px-0 sm:px-0">
         <div className="flex flex-1 items-start gap-5">
@@ -106,6 +112,7 @@ function DescriptionTemplate({
               <DepartmentSection
                 key={section._key}
                 procedure={procedure}
+                recruitmentCycleId={recruitmentCycleId}
                 section={section}
                 teamName={teamName}
               />
@@ -119,6 +126,7 @@ function DescriptionTemplate({
                   name,
                   isApplicationOpen,
                   applyLink: department.basicInformation.apply_link,
+                  recruitmentCycleId,
                   teamName,
                 }}
                 teamList={teamList}
@@ -133,13 +141,21 @@ function DescriptionTemplate({
           <ApplyButton
             link={department.basicInformation.apply_link}
             isApplicationOpen={isApplicationOpen}
+            ctaLocation="mobile_sticky"
+            recruitmentCycleId={recruitmentCycleId}
             teamName={teamName}
           />
           <div className="body8 flex flex-row-reverse gap-2 text-gray1-0">
             <Link
               to="/recruiting/#faq"
               className="flex w-fit flex-col items-center"
-              onClick={() => trackJdToFaqClick({ team_name: teamName })}
+              onClick={() =>
+                trackJdToFaqClick({
+                  cta_location: 'mobile_sticky',
+                  recruitment_cycle_id: recruitmentCycleId,
+                  team_name: teamName,
+                })
+              }
             >
               <div className="mb-[1px] items-center">FAQ 보러가기</div>
             </Link>
@@ -147,7 +163,13 @@ function DescriptionTemplate({
             <ExternalLink
               className="flex w-fit flex-col items-center"
               href={KAKAO_LINK}
-              onClick={() => trackJdContactClick({ team_name: teamName })}
+              onClick={() =>
+                trackJdContactClick({
+                  cta_location: 'mobile_sticky',
+                  recruitment_cycle_id: recruitmentCycleId,
+                  team_name: teamName,
+                })
+              }
             >
               <div className="mb-[1px] items-center">문의하기</div>
             </ExternalLink>
@@ -205,6 +227,7 @@ export const querySanityDataByName = graphql`
               answer
             }
             articles {
+              _key
               url
               title
               author
@@ -212,6 +235,7 @@ export const querySanityDataByName = graphql`
               image
             }
             roadToProList {
+              _id
               video_thumbnail {
                 asset {
                   gatsbyImageData(placeholder: BLURRED)

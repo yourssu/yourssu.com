@@ -1,8 +1,4 @@
-import type {
-  JdTeamName,
-  PageType,
-  ScrollPercent,
-} from '@/analytics/contracts';
+import type { JdTeamName, ScrollPercent } from '@/analytics/contracts';
 import {
   trackJdScrollDepthReached,
   trackMainScrollDepthReached,
@@ -11,10 +7,11 @@ import {
 
 const SCROLL_THRESHOLDS: ScrollPercent[] = [50, 70, 90];
 
-export interface ScrollRouteContext {
-  pageType: PageType;
-  teamName: JdTeamName;
-}
+export type ScrollRouteContext =
+  | { pageType: 'jd'; recruitmentCycleId: string; teamName: JdTeamName }
+  | { pageType: 'main' }
+  | { pageType: 'other' }
+  | { pageType: 'recruiting'; recruitmentCycleId: string };
 
 export function createScrollThresholdTracker(
   onThresholdReached: (threshold: ScrollPercent) => void,
@@ -50,10 +47,14 @@ export function resetScrollDepthTracking(context: ScrollRouteContext) {
         trackMainScrollDepthReached({ scroll_percent: scrollPercent });
         break;
       case 'recruiting':
-        trackRecruitingScrollDepthReached({ scroll_percent: scrollPercent });
+        trackRecruitingScrollDepthReached({
+          recruitment_cycle_id: context.recruitmentCycleId,
+          scroll_percent: scrollPercent,
+        });
         break;
       case 'jd':
         trackJdScrollDepthReached({
+          recruitment_cycle_id: context.recruitmentCycleId,
           scroll_percent: scrollPercent,
           team_name: context.teamName,
         });

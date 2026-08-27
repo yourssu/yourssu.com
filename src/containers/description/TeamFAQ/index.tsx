@@ -6,10 +6,11 @@ import { FAQInformation } from '@/types/recruiting.type';
 
 interface TeamFAQProps {
   data: FAQInformation;
+  recruitmentCycleId: string;
   teamName: JdTeamName;
 }
 
-function TeamFAQ({ data, teamName }: TeamFAQProps) {
+function TeamFAQ({ data, recruitmentCycleId, teamName }: TeamFAQProps) {
   // 데이터가 없으면 해당 섹션을 렌더링하지 않음
   if (!data?.FAQList || data.FAQList.length === 0) return null;
 
@@ -25,13 +26,15 @@ function TeamFAQ({ data, teamName }: TeamFAQProps) {
         type="multiple"
         className="flex w-full flex-col items-stretch gap-3"
       >
-        {data.FAQList.map((item) => (
+        {data.FAQList.map((item, index) => (
           <QuestionCard
             key={item._key}
             question={item.question}
             answer={item.answer}
             faqKey={item._key}
+            faqPosition={index + 1}
             pageType="jd"
+            recruitmentCycleId={recruitmentCycleId}
             teamName={teamName}
           />
         ))}

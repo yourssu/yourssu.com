@@ -16,13 +16,15 @@ function Channel({ data }: ChannelProps) {
         className="flex w-full justify-center gap-5 xs:justify-start xs:overflow-x-scroll sm:justify-start sm:overflow-x-scroll md:justify-start md:overflow-x-scroll"
         id="scrollbar-hide"
       >
-        {data.items.map((channel) => (
+        {data.items.map((channel, index) => (
           <ContentsCard
             key={channel._key}
             title={channel.title}
             tagNames={channel.tags}
             imageUrl={channel.image.asset.url}
             contentUrl={channel.link}
+            contentId={channel._key}
+            contentPosition={index + 1}
             analytics={getMainContentAnalytics(channel._key)}
           />
         ))}
