@@ -23,7 +23,6 @@ import { initializeSessionUtm, type SessionStorageLike } from '@/analytics/utm';
 import { sanitizeCapturedUrls } from '@/analytics/url';
 
 const configuredEnvironment = {
-  GATSBY_APP_POSTHOG_HOST: 'https://example.invalid',
   GATSBY_APP_POSTHOG_KEY: 'test-key',
 };
 
@@ -130,7 +129,6 @@ test('Gatsby browser configuration references every analytics variable directly'
   const source = readFileSync(new URL('./posthog.ts', import.meta.url), 'utf8');
   const browserEnvironmentVariables = [
     'GATSBY_APP_POSTHOG_DEPLOYMENT_ENV',
-    'GATSBY_APP_POSTHOG_HOST',
     'GATSBY_APP_POSTHOG_KEY',
   ];
 
@@ -141,7 +139,7 @@ test('Gatsby browser configuration references every analytics variable directly'
   }
 });
 
-test('capture starts whenever a valid key and host are configured', () => {
+test('capture starts whenever a project key is configured', () => {
   assert.deepEqual(getAnalyticsConfig({ NODE_ENV: 'development' }), {
     deploymentEnvironment: 'development',
     enabled: false,
@@ -165,27 +163,31 @@ test('capture starts whenever a valid key and host are configured', () => {
   );
 });
 
-test('only non-production environments allow an HTTP ingestion host', () => {
-  assert.equal(
+test('every deployment environment uses the fixed PostHog ingestion host', () => {
+  assert.deepEqual(
     getAnalyticsConfig({
       ...configuredEnvironment,
       GATSBY_APP_POSTHOG_DEPLOYMENT_ENV: 'staging',
-      GATSBY_APP_POSTHOG_HOST: 'http://localhost:8000',
       NODE_ENV: 'production',
-    }).enabled,
-    true,
+    }),
+    {
+      deploymentEnvironment: 'staging',
+      enabled: true,
+      host: 'https://us.i.posthog.com',
+      key: 'test-key',
+    },
   );
 
   assert.deepEqual(
     getAnalyticsConfig({
       ...configuredEnvironment,
-      GATSBY_APP_POSTHOG_HOST: 'http://localhost:8000',
       NODE_ENV: 'production',
     }),
     {
       deploymentEnvironment: 'production',
-      enabled: false,
-      reason: 'invalid_host',
+      enabled: true,
+      host: 'https://us.i.posthog.com',
+      key: 'test-key',
     },
   );
 });

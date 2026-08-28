@@ -89,7 +89,6 @@ jobs:
             echo "GATSBY_APP_SANITY_DATASET=$GATSBY_APP_SANITY_DATASET"
             echo "GATSBY_APP_GA_ID=$GATSBY_APP_GA_ID"
             echo "GATSBY_APP_POSTHOG_KEY=$GATSBY_APP_POSTHOG_KEY"
-            echo "GATSBY_APP_POSTHOG_HOST=$GATSBY_APP_POSTHOG_HOST"
             echo "GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=production"
           } >> .env
         env:
@@ -98,7 +97,6 @@ jobs:
           GATSBY_APP_SANITY_DATASET: ${{ secrets.GATSBY_APP_SANITY_DATASET }}
           GATSBY_APP_GA_ID: ${{ secrets.GATSBY_APP_GA_ID }}
           GATSBY_APP_POSTHOG_KEY: ${{ secrets.GATSBY_APP_POSTHOG_KEY }}
-          GATSBY_APP_POSTHOG_HOST: ${{ secrets.GATSBY_APP_POSTHOG_HOST }}
 
       - name: Build application
         run: pnpm build

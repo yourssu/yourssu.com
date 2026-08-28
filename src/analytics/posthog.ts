@@ -26,7 +26,6 @@ function getBrowserAnalyticsEnvironment(): AnalyticsEnvironment {
   return {
     GATSBY_APP_POSTHOG_DEPLOYMENT_ENV:
       process.env.GATSBY_APP_POSTHOG_DEPLOYMENT_ENV,
-    GATSBY_APP_POSTHOG_HOST: process.env.GATSBY_APP_POSTHOG_HOST,
     GATSBY_APP_POSTHOG_KEY: process.env.GATSBY_APP_POSTHOG_KEY,
     NODE_ENV: process.env.NODE_ENV,
   };

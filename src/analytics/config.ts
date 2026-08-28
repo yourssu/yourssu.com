@@ -5,10 +5,11 @@ export type AnalyticsDeploymentEnvironment =
 
 export interface AnalyticsEnvironment {
   GATSBY_APP_POSTHOG_DEPLOYMENT_ENV?: string;
-  GATSBY_APP_POSTHOG_HOST?: string;
   GATSBY_APP_POSTHOG_KEY?: string;
   NODE_ENV?: string;
 }
+
+const POSTHOG_HOST = 'https://us.i.posthog.com';
 
 interface EnabledAnalyticsConfig {
   deploymentEnvironment: AnalyticsDeploymentEnvironment;
@@ -20,7 +21,7 @@ interface EnabledAnalyticsConfig {
 interface DisabledAnalyticsConfig {
   deploymentEnvironment: AnalyticsDeploymentEnvironment;
   enabled: false;
-  reason: 'invalid_host' | 'missing_configuration';
+  reason: 'missing_configuration';
 }
 
 export type AnalyticsConfig = DisabledAnalyticsConfig | EnabledAnalyticsConfig;
@@ -42,32 +43,13 @@ function getDeploymentEnvironment(
   return environment.NODE_ENV === 'production' ? 'production' : 'development';
 }
 
-function isValidHost(
-  host: string,
-  deploymentEnvironment: AnalyticsDeploymentEnvironment,
-) {
-  try {
-    const url = new URL(host);
-    if (url.username || url.password || url.search || url.hash) return false;
-
-    if (deploymentEnvironment === 'production') {
-      return url.protocol === 'https:';
-    }
-
-    return url.protocol === 'https:' || url.protocol === 'http:';
-  } catch {
-    return false;
-  }
-}
-
 export function getAnalyticsConfig(
   environment: AnalyticsEnvironment,
 ): AnalyticsConfig {
   const deploymentEnvironment = getDeploymentEnvironment(environment);
 
-  const host = environment.GATSBY_APP_POSTHOG_HOST?.trim();
   const key = environment.GATSBY_APP_POSTHOG_KEY?.trim();
-  if (!host || !key) {
+  if (!key) {
     return {
       deploymentEnvironment,
       enabled: false,
@@ -75,13 +57,10 @@ export function getAnalyticsConfig(
     };
   }
 
-  if (!isValidHost(host, deploymentEnvironment)) {
-    return {
-      deploymentEnvironment,
-      enabled: false,
-      reason: 'invalid_host',
-    };
-  }
-
-  return { deploymentEnvironment, enabled: true, host, key };
+  return {
+    deploymentEnvironment,
+    enabled: true,
+    host: POSTHOG_HOST,
+    key,
+  };
 }

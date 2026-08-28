@@ -8,17 +8,15 @@ SPR-124는 GTM의 PostHog 커스텀 이벤트 13개를 같은 이름과 핵심 �
 
 ## 환경 설정과 프로덕션 전환 순서
 
-모든 값은 Gatsby 빌드 시 주입되는 공개 클라이언트 환경변수다. 실제 프로젝트
-키와 ingestion host는 저장소에 커밋하지 않는다.
+PostHog project key는 Gatsby 빌드 시 주입되는 클라이언트 환경변수다. 공개 US
+ingestion host는 `https://us.i.posthog.com`으로 코드에 고정한다.
 
 ```dotenv
 GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=development
 GATSBY_APP_POSTHOG_KEY=<environment-project-key>
-GATSBY_APP_POSTHOG_HOST=<environment-ingestion-host>
 ```
 
-- 유효한 project key와 ingestion host가 모두 있으면 SDK가 항상 초기화된다.
-- `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=production`에서는 HTTPS host만 허용한다.
+- 유효한 project key가 있으면 SDK가 항상 초기화된다.
 - `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=staging`은 별도 프로젝트에서 검증할 때
   사용한다.
 - 배포 환경을 생략한 production 빌드는 안전하게 `production`으로 간주한다.
@@ -28,9 +26,10 @@ GATSBY_APP_POSTHOG_HOST=<environment-ingestion-host>
 진행한다. GTM 태그 중지·게시와 네이티브 코드 배포는 같은 전환 창에서 수행하며,
 SPR-124 자체에서는 GTM 컨테이너를 수정하거나 게시하지 않는다.
 
-개발과 스테이징에서는 별도 PostHog 프로젝트 키를 사용한다. 키나 host가 없거나
-host 형식이 유효하지 않으면 capture는 조용히 비활성화된다. 모듈과 HMR이 다시
-평가되어도 전역 초기화 상태를 확인해 SDK를 한 번만 초기화한다.
+개발과 스테이징에서는 별도 PostHog 프로젝트 키를 사용한다. 키가 없으면 capture는
+조용히 비활성화된다. 프로덕션 배포에는 GitHub `production` Environment Secret으로
+`GATSBY_APP_POSTHOG_KEY`만 등록한다. 모듈과 HMR이 다시 평가되어도 전역 초기화
+상태를 확인해 SDK를 한 번만 초기화한다.
 
 ## 이벤트 계약
 
