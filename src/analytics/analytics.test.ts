@@ -13,7 +13,11 @@ import {
   getTfName,
 } from '@/analytics/contracts';
 import { createRecruitingJdCardImpressionTracker } from '@/analytics/recruitingImpression';
-import { createRouteEventTracker } from '@/analytics/routeTracking';
+import {
+  createRouteEventTracker,
+  createSessionUtmSynchronizer,
+  getScrollRouteContext,
+} from '@/analytics/routeTracking';
 import { createScrollThresholdTracker } from '@/analytics/scrollDepth';
 import { initializeSessionUtm, type SessionStorageLike } from '@/analytics/utm';
 import { sanitizeCapturedUrls } from '@/analytics/url';
@@ -221,6 +225,10 @@ test('Sanity keys map cards without inspecting rendered text or URLs', () => {
     category: 'ios',
     content_type: 'instagram',
   });
+  assert.deepEqual(getMainContentAnalytics('oklch'), {
+    category: '',
+    content_type: 'medium',
+  });
   assert.equal(getMainContentAnalytics('unknown'), undefined);
 });
 
@@ -389,6 +397,30 @@ test('a new PostHog session starts a fresh UTM context', () => {
   );
 });
 
+test('a PostHog session change registers fresh UTM before its first event', () => {
+  const storage = new MemorySessionStorage();
+  const registered: Array<Record<string, string>> = [];
+  const landings: string[] = [];
+  let search = '?utm_source=first';
+  const synchronize = createSessionUtmSynchronizer({
+    getSearch: () => search,
+    getStorage: () => storage,
+    landingPageViewed: ({ source }) => landings.push(source),
+    registerSessionProperties: (properties) => registered.push(properties),
+  });
+
+  assert.equal(synchronize('session-1'), true);
+  assert.equal(synchronize('session-1'), false);
+
+  search = '?utm_source=rotated&utm_campaign=fresh';
+  assert.equal(synchronize('session-2'), true);
+  assert.deepEqual(registered, [
+    { utm_source: 'first' },
+    { utm_campaign: 'fresh', utm_source: 'rotated' },
+  ]);
+  assert.deepEqual(landings, ['first', 'rotated']);
+});
+
 test('route tracking fires once per pathname and fires again after returning', () => {
   const captured: string[] = [];
   const trackRoute = createRouteEventTracker({
@@ -402,7 +434,6 @@ test('route tracking fires once per pathname and fires again after returning', (
 
   assert.equal(trackRoute({ pathname: '/', search: '?utm_source=test' }), true);
   assert.equal(trackRoute({ pathname: '/', search: '?different=true' }), false);
-  assert.equal(trackRoute({ pathname: '/recruiting/' }), false);
   assert.equal(
     trackRoute(
       { pathname: '/recruiting/' },
@@ -429,6 +460,23 @@ test('route tracking fires once per pathname and fires again after returning', (
     '$pageview:main:none',
     'main',
   ]);
+});
+
+test('recruitment-shaped 404 routes keep the generic pageview only once', () => {
+  const captured: string[] = [];
+  const trackRoute = createRouteEventTracker({
+    jdPageViewed: () => captured.push('jd'),
+    mainPageViewed: () => captured.push('main'),
+    pageViewed: (pageType) => captured.push(`$pageview:${pageType}`),
+    recruitingPageViewed: () => captured.push('recruiting'),
+  });
+
+  assert.equal(trackRoute({ pathname: '/recruiting/not-a-team/' }), true);
+  assert.equal(trackRoute({ pathname: '/recruiting/not-a-team' }), false);
+  assert.deepEqual(captured, ['$pageview:jd']);
+  assert.deepEqual(getScrollRouteContext('jd', '/recruiting/not-a-team'), {
+    pageType: 'other',
+  });
 });
 
 test('scroll thresholds fire once in ascending order even when crossed together', () => {

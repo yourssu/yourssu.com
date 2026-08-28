@@ -14,10 +14,19 @@ import {
   captureNativeEvent,
   getPostHogSessionId,
   initPostHog,
+  onPostHogSessionId,
   registerSessionProperties,
 } from '@/analytics/posthog';
-import { resetScrollDepthTracking } from '@/analytics/scrollDepth';
-import { initializeSessionUtm } from '@/analytics/utm';
+import {
+  resetScrollDepthTracking,
+  type ScrollRouteContext,
+} from '@/analytics/scrollDepth';
+import {
+  initializeSessionUtm,
+  type LandingUtmProperties,
+  type SessionStorageLike,
+  type SessionUtm,
+} from '@/analytics/utm';
 import { getSafeCurrentUrl } from '@/analytics/url';
 
 interface RouteLocation {
@@ -44,6 +53,13 @@ interface RouteEventHandlers {
   recruitingPageViewed(recruitmentCycleId: string): void;
 }
 
+interface SessionUtmHandlers {
+  getSearch(): string;
+  getStorage(): SessionStorageLike;
+  landingPageViewed(properties: LandingUtmProperties): void;
+  registerSessionProperties(properties: SessionUtm): void;
+}
+
 export function createRouteEventTracker(handlers: RouteEventHandlers) {
   let lastPathname: string | undefined;
 
@@ -53,13 +69,6 @@ export function createRouteEventTracker(handlers: RouteEventHandlers) {
 
     const pageType = classifyPage(pathname);
     const recruitmentCycleId = context.recruitmentCycleId;
-    if (
-      (pageType === 'jd' || pageType === 'recruiting') &&
-      !recruitmentCycleId
-    ) {
-      return false;
-    }
-
     lastPathname = pathname;
     handlers.pageViewed(pageType, location, recruitmentCycleId);
 
@@ -68,22 +77,72 @@ export function createRouteEventTracker(handlers: RouteEventHandlers) {
         handlers.mainPageViewed();
         break;
       case 'recruiting': {
-        if (!recruitmentCycleId) return false;
-        handlers.recruitingPageViewed(recruitmentCycleId);
+        if (recruitmentCycleId) {
+          handlers.recruitingPageViewed(recruitmentCycleId);
+        }
         break;
       }
       case 'jd': {
-        if (!recruitmentCycleId) return false;
-        handlers.jdPageViewed(
-          getJdTeamNameFromPathname(pathname),
-          recruitmentCycleId,
-        );
+        if (recruitmentCycleId) {
+          handlers.jdPageViewed(
+            getJdTeamNameFromPathname(pathname),
+            recruitmentCycleId,
+          );
+        }
         break;
       }
     }
 
     return true;
   };
+}
+
+export function createSessionUtmSynchronizer(handlers: SessionUtmHandlers) {
+  let lastSessionId: string | undefined;
+
+  return (sessionId: string) => {
+    if (!sessionId || sessionId === lastSessionId) return false;
+
+    // Set this before capturing landing_page_viewed. That capture re-enters
+    // PostHog's session lookup and must not initialize the same session twice.
+    lastSessionId = sessionId;
+    const sessionUtm = initializeSessionUtm(
+      handlers.getSearch(),
+      handlers.getStorage(),
+      sessionId,
+    );
+    handlers.registerSessionProperties(sessionUtm.sessionProperties);
+    if (sessionUtm.isFirstEntry && sessionUtm.landingProperties) {
+      handlers.landingPageViewed(sessionUtm.landingProperties);
+    }
+
+    return true;
+  };
+}
+
+export function getScrollRouteContext(
+  pageType: PageType,
+  pathname: string,
+  recruitmentCycleId?: string,
+): ScrollRouteContext {
+  switch (pageType) {
+    case 'main':
+      return { pageType };
+    case 'recruiting':
+      return recruitmentCycleId
+        ? { pageType, recruitmentCycleId }
+        : { pageType: 'other' };
+    case 'jd':
+      return recruitmentCycleId
+        ? {
+            pageType,
+            recruitmentCycleId,
+            teamName: getJdTeamNameFromPathname(pathname),
+          }
+        : { pageType: 'other' };
+    case 'other':
+      return { pageType };
+  }
 }
 
 const trackRouteEvent = createRouteEventTracker({
@@ -108,20 +167,24 @@ const trackRouteEvent = createRouteEventTracker({
 });
 
 let fallbackSessionUtm: string | null = null;
+let sessionUtmSubscriptionInitialized = false;
+
+const synchronizeSessionUtm = createSessionUtmSynchronizer({
+  getSearch: () => window.location.search,
+  getStorage: getSessionStorage,
+  landingPageViewed: trackLandingPageViewed,
+  registerSessionProperties,
+});
 
 export function trackRouteUpdate(location: RouteLocation) {
   if (!initPostHog()) return;
 
-  const storage = getSessionStorage();
-  const sessionUtm = initializeSessionUtm(
-    location.search ?? '',
-    storage,
-    getPostHogSessionId() ?? 'browser-tab',
-  );
-  registerSessionProperties(sessionUtm.sessionProperties);
-  if (sessionUtm.isFirstEntry && sessionUtm.landingProperties) {
-    trackLandingPageViewed(sessionUtm.landingProperties);
+  if (!sessionUtmSubscriptionInitialized) {
+    sessionUtmSubscriptionInitialized =
+      onPostHogSessionId(synchronizeSessionUtm) !== undefined;
   }
+  const sessionId = getPostHogSessionId();
+  if (sessionId) synchronizeSessionUtm(sessionId);
 
   const pageType = classifyPage(location.pathname);
   const recruitmentCycleId =
@@ -129,32 +192,9 @@ export function trackRouteUpdate(location: RouteLocation) {
       ? getRenderedRecruitmentCycleId()
       : undefined;
   if (!trackRouteEvent(location, { recruitmentCycleId })) return;
-
-  switch (pageType) {
-    case 'main':
-      resetScrollDepthTracking({ pageType });
-      break;
-    case 'recruiting': {
-      if (!recruitmentCycleId) return;
-      resetScrollDepthTracking({
-        pageType,
-        recruitmentCycleId,
-      });
-      break;
-    }
-    case 'jd': {
-      if (!recruitmentCycleId) return;
-      resetScrollDepthTracking({
-        pageType,
-        recruitmentCycleId,
-        teamName: getJdTeamNameFromPathname(location.pathname),
-      });
-      break;
-    }
-    case 'other':
-      resetScrollDepthTracking({ pageType });
-      break;
-  }
+  resetScrollDepthTracking(
+    getScrollRouteContext(pageType, location.pathname, recruitmentCycleId),
+  );
 }
 
 function getRenderedRecruitmentCycleId() {

@@ -99,3 +99,13 @@ export function getPostHogSessionId() {
     return undefined;
   }
 }
+
+export function onPostHogSessionId(callback: (sessionId: string) => void) {
+  if (!initPostHog()) return undefined;
+
+  try {
+    return posthog.onSessionId(callback);
+  } catch {
+    return undefined;
+  }
+}

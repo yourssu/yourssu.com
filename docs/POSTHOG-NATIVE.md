@@ -64,7 +64,9 @@ host 형식이 유효하지 않으면 capture는 조용히 비활성화된다. �
 추가된다. 최초 UTM 값은 `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`,
 `utm_content` 세션 속성으로 등록되어 같은 탭의 새로고침과 후속 SPA 이동에서도
 유지된다. PostHog 세션 ID가 바뀌면 새 진입 URL을 기준으로 UTM 컨텍스트를 다시
-시작한다. URL 속성은 query와 hash를 제거한 뒤 전송한다.
+시작한다. 세션 변경 콜백에서 새 UTM 세션 속성을 즉시 등록하므로, 비활성 시간
+초과로 세션 교체를 일으킨 첫 이벤트에도 새 컨텍스트가 포함된다. URL 속성은
+query와 hash를 제거한 뒤 전송한다.
 
 `recruitment_cycle_id`는 활성 `recruitingSchedule` Sanity 문서의 `_id`를
 사용한다. 리크루팅 정적 페이지와 빌드 시 생성되는 JD 페이지가 같은 문서 ID를
@@ -83,7 +85,9 @@ JD URL 팀 매핑은 기존 정책대로 Product Manager와 Backend Engineer를 
 Gatsby `onRouteUpdate` 한 곳만 `$pageview`와 페이지별 커스텀 이벤트를 담당한다.
 같은 pathname에 연속으로 들어오는 콜백과 query/hash만 바뀐 콜백은 무시하고,
 다른 경로를 거쳐 돌아오면 새 진입으로 수집한다. 스크롤 임계값 상태는 pathname
-전환 때 초기화된다. 모집 카드 노출은 `IntersectionObserver`의 0.5 임계값을
+전환 때 초기화된다. `/recruiting/*` 형태의 404처럼 모집 주기 ID가 없는 경로도
+일반 `$pageview`는 한 번 수집하지만 모집 전용 이벤트와 스크롤 이벤트는 생략한다.
+모집 카드 노출은 `IntersectionObserver`의 0.5 임계값을
 사용하며 같은 브라우저 런타임에서 정규화된 pathname과 Sanity 카드 `_key` 조합을
 한 번만 수집한다. 전체 새로고침은 새 런타임이므로 다시 수집할 수 있다.
 

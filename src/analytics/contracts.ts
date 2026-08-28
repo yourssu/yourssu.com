@@ -62,12 +62,13 @@ export interface MainContentAnalytics {
   content_type: MainContentType;
 }
 
-// These are Sanity item keys, not rendered labels or link fragments. The empty
-// category mirrors the current GTM behavior for the town-hall content card.
+// These are Sanity item keys, not rendered labels or link fragments. Empty
+// categories mirror GTM for cards that have no category mapping. The `oklch`
+// key is retained by Sanity but now identifies the generic YOURSSU life card.
 const MAIN_CONTENT_BY_KEY: Record<string, MainContentAnalytics> = {
   f66406c00167: { category: '', content_type: 'youtube' },
   'ios-story': { category: 'ios', content_type: 'instagram' },
-  oklch: { category: 'design', content_type: 'medium' },
+  oklch: { category: '', content_type: 'medium' },
   'one-team': { category: 'hr', content_type: 'youtube' },
 };
 
