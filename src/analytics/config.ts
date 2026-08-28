@@ -7,8 +7,6 @@ export interface AnalyticsEnvironment {
   GATSBY_APP_POSTHOG_DEPLOYMENT_ENV?: string;
   GATSBY_APP_POSTHOG_HOST?: string;
   GATSBY_APP_POSTHOG_KEY?: string;
-  GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED?: string;
-  GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED?: string;
   NODE_ENV?: string;
 }
 
@@ -22,11 +20,7 @@ interface EnabledAnalyticsConfig {
 interface DisabledAnalyticsConfig {
   deploymentEnvironment: AnalyticsDeploymentEnvironment;
   enabled: false;
-  reason:
-    | 'invalid_host'
-    | 'missing_configuration'
-    | 'native_capture_disabled'
-    | 'production_safety_lock';
+  reason: 'invalid_host' | 'missing_configuration';
 }
 
 export type AnalyticsConfig = DisabledAnalyticsConfig | EnabledAnalyticsConfig;
@@ -70,25 +64,6 @@ export function getAnalyticsConfig(
   environment: AnalyticsEnvironment,
 ): AnalyticsConfig {
   const deploymentEnvironment = getDeploymentEnvironment(environment);
-
-  if (environment.GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED !== 'true') {
-    return {
-      deploymentEnvironment,
-      enabled: false,
-      reason: 'native_capture_disabled',
-    };
-  }
-
-  if (
-    deploymentEnvironment === 'production' &&
-    environment.GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED !== 'true'
-  ) {
-    return {
-      deploymentEnvironment,
-      enabled: false,
-      reason: 'production_safety_lock',
-    };
-  }
 
   const host = environment.GATSBY_APP_POSTHOG_HOST?.trim();
   const key = environment.GATSBY_APP_POSTHOG_KEY?.trim();

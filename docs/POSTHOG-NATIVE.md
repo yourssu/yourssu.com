@@ -6,31 +6,27 @@ SPR-124는 GTM의 PostHog 커스텀 이벤트 13개를 같은 이름과 핵심 �
 전달하지 않는다. SPR-132는 이 계약을 유지하면서 모집 카드 노출과 리크루팅 FAQ
 문의 이벤트 2개 및 분석 속성을 보강한다.
 
-## 환경 설정과 프로덕션 안전장치
+## 환경 설정과 프로덕션 전환 순서
 
 모든 값은 Gatsby 빌드 시 주입되는 공개 클라이언트 환경변수다. 실제 프로젝트
 키와 ingestion host는 저장소에 커밋하지 않는다.
 
 ```dotenv
-GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED=false
 GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=development
 GATSBY_APP_POSTHOG_KEY=<environment-project-key>
 GATSBY_APP_POSTHOG_HOST=<environment-ingestion-host>
-GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED=false
 ```
 
-- 모든 환경에서 `GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED=true`여야 SDK가
-  초기화된다.
-- `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=production`에서는 위 플래그와 별도로
-  `GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED=true`도 필요하다.
-- `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=staging`은 프로덕션 잠금을 열지 않고 별도
-  프로젝트에서 검증할 때 사용한다.
+- 유효한 project key와 ingestion host가 모두 있으면 SDK가 항상 초기화된다.
+- `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=production`에서는 HTTPS host만 허용한다.
+- `GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=staging`은 별도 프로젝트에서 검증할 때
+  사용한다.
 - 배포 환경을 생략한 production 빌드는 안전하게 `production`으로 간주한다.
 
-SPR-125 전환 전에는 프로덕션의 두 활성화 플래그를 모두 `false`로 유지한다.
-SPR-125에서 GTM PostHog 초기화 및 13개 이벤트 태그를 중지하는 같은 전환 창에
-두 플래그를 `true`로 바꾸고 다시 빌드·배포한다. SPR-124에서는 GTM 컨테이너를
-수정하거나 게시하지 않는다.
+별도 capture 활성화 플래그는 없다. 따라서 SPR-125의 GTM PostHog 초기화 및
+13개 이벤트 태그 정리 준비를 완료한 뒤에만 SPR-124를 병합하고 프로덕션 릴리스를
+진행한다. GTM 태그 중지·게시와 네이티브 코드 배포는 같은 전환 창에서 수행하며,
+SPR-124 자체에서는 GTM 컨테이너를 수정하거나 게시하지 않는다.
 
 개발과 스테이징에서는 별도 PostHog 프로젝트 키를 사용한다. 키나 host가 없거나
 host 형식이 유효하지 않으면 capture는 조용히 비활성화된다. 모듈과 HMR이 다시

@@ -25,7 +25,6 @@ import { sanitizeCapturedUrls } from '@/analytics/url';
 const configuredEnvironment = {
   GATSBY_APP_POSTHOG_HOST: 'https://example.invalid',
   GATSBY_APP_POSTHOG_KEY: 'test-key',
-  GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED: 'true',
 };
 
 class MemorySessionStorage implements SessionStorageLike {
@@ -133,21 +132,20 @@ test('Gatsby browser configuration references every analytics variable directly'
     'GATSBY_APP_POSTHOG_DEPLOYMENT_ENV',
     'GATSBY_APP_POSTHOG_HOST',
     'GATSBY_APP_POSTHOG_KEY',
-    'GATSBY_APP_POSTHOG_NATIVE_CAPTURE_ENABLED',
-    'GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED',
   ];
 
   assert.doesNotMatch(source, /getAnalyticsConfig\(process\.env\)/);
+  assert.doesNotMatch(source, /POSTHOG_.*CAPTURE_ENABLED/);
   for (const variable of browserEnvironmentVariables) {
     assert.match(source, new RegExp(`process\\.env\\.${variable}`));
   }
 });
 
-test('capture is opt-in and production has an independent safety lock', () => {
+test('capture starts whenever a valid key and host are configured', () => {
   assert.deepEqual(getAnalyticsConfig({ NODE_ENV: 'development' }), {
     deploymentEnvironment: 'development',
     enabled: false,
-    reason: 'native_capture_disabled',
+    reason: 'missing_configuration',
   });
 
   assert.equal(
@@ -158,33 +156,37 @@ test('capture is opt-in and production has an independent safety lock', () => {
     true,
   );
 
-  assert.deepEqual(
-    getAnalyticsConfig({ ...configuredEnvironment, NODE_ENV: 'production' }),
-    {
-      deploymentEnvironment: 'production',
-      enabled: false,
-      reason: 'production_safety_lock',
-    },
-  );
-
   assert.equal(
     getAnalyticsConfig({
       ...configuredEnvironment,
-      GATSBY_APP_POSTHOG_PRODUCTION_CAPTURE_ENABLED: 'true',
       NODE_ENV: 'production',
     }).enabled,
     true,
   );
 });
 
-test('staging can capture without opening the production lock', () => {
+test('only non-production environments allow an HTTP ingestion host', () => {
   assert.equal(
     getAnalyticsConfig({
       ...configuredEnvironment,
       GATSBY_APP_POSTHOG_DEPLOYMENT_ENV: 'staging',
+      GATSBY_APP_POSTHOG_HOST: 'http://localhost:8000',
       NODE_ENV: 'production',
     }).enabled,
     true,
+  );
+
+  assert.deepEqual(
+    getAnalyticsConfig({
+      ...configuredEnvironment,
+      GATSBY_APP_POSTHOG_HOST: 'http://localhost:8000',
+      NODE_ENV: 'production',
+    }),
+    {
+      deploymentEnvironment: 'production',
+      enabled: false,
+      reason: 'invalid_host',
+    },
   );
 });
 
