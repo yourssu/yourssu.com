@@ -2,6 +2,8 @@ import { graphql, Link } from 'gatsby';
 import { useBreakpoint } from 'gatsby-plugin-breakpoints';
 import { useEffect, useState } from 'react';
 
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdContactClick, trackJdToFaqClick } from '@/analytics/events';
 import ApplyButton from '@/components/Button/ApplyButton';
 import Layout from '@/components/Layout';
 import DepartmentSeo from '@/components/Seo/DepartmentSeo';
@@ -20,10 +22,12 @@ function ExternalLink({
   children,
   className,
   href,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
   href: string;
+  onClick?: () => void;
 }) {
   return (
     <a
@@ -31,6 +35,7 @@ function ExternalLink({
       href={href}
       rel="noopener noreferrer"
       target="_blank"
+      onClick={onClick}
     >
       {children}
     </a>
@@ -52,8 +57,11 @@ interface SanityDepartmentData {
 interface DescriptionTemplateProps {
   data: SanityDepartmentData;
   pageContext: {
+    departmentId: string;
+    jdTeamName: JdTeamName;
     name: string;
-    teamList: { name: string; isRecruiting: boolean }[];
+    recruitmentCycleId: string;
+    teamList: { name: string; isRecruiting: boolean; slug: string }[];
     formSchedule: { start: Date | null; end: Date | null } | null;
     procedure:
       | {
@@ -68,7 +76,14 @@ function DescriptionTemplate({
   data: {
     allSanityDepartment: { edges },
   },
-  pageContext: { name, teamList, formSchedule, procedure },
+  pageContext: {
+    jdTeamName,
+    name,
+    recruitmentCycleId,
+    teamList,
+    formSchedule,
+    procedure,
+  },
 }: DescriptionTemplateProps) {
   const department = edges[0]?.node;
   if (!department?.sections?.length)
@@ -83,6 +98,7 @@ function DescriptionTemplate({
   }));
   const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const breakpoints = useBreakpoint();
+  const teamName = jdTeamName;
 
   useEffect(() => {
     if (typeof window !== 'undefined' && formSchedule) {
@@ -92,6 +108,12 @@ function DescriptionTemplate({
 
   return (
     <Layout isMainPage={true}>
+      <span
+        hidden
+        aria-hidden="true"
+        data-analytics-team-name={teamName}
+        data-recruitment-cycle-id={recruitmentCycleId}
+      />
       <TeamHeader name={name} basicInformation={department.basicInformation} />
       <div className="flex items-start justify-center gap-5 self-stretch bg-bg-basicDefault pb-20 pl-28 pr-28 pt-5 xs:px-0 sm:px-0">
         <div className="flex flex-1 items-start gap-5">
@@ -100,7 +122,9 @@ function DescriptionTemplate({
               <DepartmentSection
                 key={section._key}
                 procedure={procedure}
+                recruitmentCycleId={recruitmentCycleId}
                 section={section}
+                teamName={teamName}
               />
             ))}
           </div>
@@ -112,6 +136,8 @@ function DescriptionTemplate({
                   name,
                   isApplicationOpen,
                   applyLink: department.basicInformation.apply_link,
+                  recruitmentCycleId,
+                  teamName,
                 }}
                 teamList={teamList}
               />
@@ -125,11 +151,21 @@ function DescriptionTemplate({
           <ApplyButton
             link={department.basicInformation.apply_link}
             isApplicationOpen={isApplicationOpen}
+            ctaLocation="mobile_sticky"
+            recruitmentCycleId={recruitmentCycleId}
+            teamName={teamName}
           />
           <div className="body8 flex flex-row-reverse gap-2 text-gray1-0">
             <Link
               to="/recruiting/#faq"
               className="flex w-fit flex-col items-center"
+              onClick={() =>
+                trackJdToFaqClick({
+                  cta_location: 'mobile_sticky',
+                  recruitment_cycle_id: recruitmentCycleId,
+                  team_name: teamName,
+                })
+              }
             >
               <div className="mb-[1px] items-center">FAQ 보러가기</div>
             </Link>
@@ -137,6 +173,13 @@ function DescriptionTemplate({
             <ExternalLink
               className="flex w-fit flex-col items-center"
               href={KAKAO_LINK}
+              onClick={() =>
+                trackJdContactClick({
+                  cta_location: 'mobile_sticky',
+                  recruitment_cycle_id: recruitmentCycleId,
+                  team_name: teamName,
+                })
+              }
             >
               <div className="mb-[1px] items-center">문의하기</div>
             </ExternalLink>
@@ -165,9 +208,9 @@ export function Head({
   );
 }
 
-export const querySanityDataByName = graphql`
-  query querySanityDataByName($name: String) {
-    allSanityDepartment(filter: { basicInformation: { name: { eq: $name } } }) {
+export const querySanityDataById = graphql`
+  query querySanityDataById($departmentId: String) {
+    allSanityDepartment(filter: { _id: { eq: $departmentId } }) {
       edges {
         node {
           basicInformation {
@@ -189,10 +232,12 @@ export const querySanityDataByName = graphql`
             description
             quoteText
             faqList {
+              _key
               question
               answer
             }
             articles {
+              _key
               url
               title
               author
@@ -200,6 +245,7 @@ export const querySanityDataByName = graphql`
               image
             }
             roadToProList {
+              _id
               video_thumbnail {
                 asset {
                   gatsbyImageData(placeholder: BLURRED)

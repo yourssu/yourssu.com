@@ -1,6 +1,8 @@
 import { Link } from 'gatsby';
 import tw from 'tailwind-styled-components';
 
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdContactClick, trackJdToFaqClick } from '@/analytics/events';
 import ApplyButton from '@/components/Button/ApplyButton';
 
 import { ArrowLeft } from './ArrowLeft';
@@ -13,8 +15,10 @@ interface SideNavigationProps {
     name: string;
     isApplicationOpen: boolean;
     applyLink: string;
+    recruitmentCycleId: string;
+    teamName: JdTeamName;
   };
-  teamList: { name: string; isRecruiting: boolean }[];
+  teamList: { name: string; isRecruiting: boolean; slug: string }[];
 }
 
 function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
@@ -25,7 +29,7 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
       <NavigationContainer>
         <h2 className="T3_Sb_20">TEAM</h2>
         <NavigationList>
-          {teamList.map(({ name, isRecruiting }) => {
+          {teamList.map(({ name, isRecruiting, slug }) => {
             const isActive = currentTeam.name === name;
             const content = (
               <>
@@ -36,7 +40,7 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
 
             return isRecruiting ? (
               <NavigationItem
-                to={`/recruiting/${name.toLowerCase().replaceAll(' ', '_')}`}
+                to={`/recruiting/${slug}`}
                 key={name}
                 $active={isActive}
               >
@@ -53,10 +57,20 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
       <ApplyButton
         link={currentTeam.applyLink}
         isApplicationOpen={currentTeam.isApplicationOpen}
+        ctaLocation="desktop_sidebar"
+        recruitmentCycleId={currentTeam.recruitmentCycleId}
+        teamName={currentTeam.teamName}
       />
       <div className="flex w-full gap-5">
         <Link
           to="/recruiting/#faq"
+          onClick={() =>
+            trackJdToFaqClick({
+              cta_location: 'desktop_sidebar',
+              recruitment_cycle_id: currentTeam.recruitmentCycleId,
+              team_name: currentTeam.teamName,
+            })
+          }
           className="inline-flex h-[130px] flex-1 flex-col items-center justify-between self-stretch overflow-hidden rounded-[12px] pt-3 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4]"
         >
           <div className="B3_Sb_14 mb-[1px] items-center text-gray1-0">
@@ -68,6 +82,13 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
           href={KAKAO_LINK}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() =>
+            trackJdContactClick({
+              cta_location: 'desktop_sidebar',
+              recruitment_cycle_id: currentTeam.recruitmentCycleId,
+              team_name: currentTeam.teamName,
+            })
+          }
           className="inline-flex h-[130px] flex-1 flex-col items-center justify-between self-stretch overflow-hidden rounded-[12px] pt-3 outline outline-1 outline-offset-[-1px] outline-[#F1F1F4]"
         >
           <div className="B3_Sb_14 mb-[1px] items-center text-gray1-0">

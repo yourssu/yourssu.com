@@ -1,6 +1,12 @@
 import * as Accordion from '@radix-ui/react-accordion';
 import tw from 'tailwind-styled-components';
 
+import {
+  getFaqToggleAction,
+  type JdTeamName,
+  type PageType,
+} from '@/analytics/contracts';
+import { trackFaqToggleClick } from '@/analytics/events';
 import smallArrowImg from '@/assets/icons/smallarrow-left.svg';
 
 import { QuestionEmptyIcon, QuestionFillIcon } from './icons';
@@ -8,11 +14,23 @@ import { QuestionEmptyIcon, QuestionFillIcon } from './icons';
 export default function QuestionCard({
   question,
   answer,
+  faqKey,
+  faqPosition,
   link,
+  onAnswerLinkClick,
+  pageType,
+  recruitmentCycleId,
+  teamName,
 }: {
   question: string;
   answer: string;
+  faqKey: string;
+  faqPosition: number;
   link?: { label: string; href: string };
+  onAnswerLinkClick?: () => void;
+  pageType: PageType;
+  recruitmentCycleId: string;
+  teamName?: JdTeamName;
 }) {
   const renderBoldText = (text: string) => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
@@ -28,10 +46,27 @@ export default function QuestionCard({
   };
 
   return (
-    <Accordion.Item value={question} className="w-full">
+    <Accordion.Item value={faqKey} className="w-full">
       <Container>
         <Accordion.Header>
-          <Accordion.Trigger className="group flex w-full items-center justify-between">
+          <Accordion.Trigger
+            className="group flex w-full items-center justify-between"
+            onClick={(event) => {
+              const toggleAction = getFaqToggleAction(
+                event.currentTarget.dataset.state,
+              );
+              if (!toggleAction) return;
+
+              trackFaqToggleClick({
+                faq_key: faqKey,
+                faq_position: faqPosition,
+                page_type: pageType,
+                recruitment_cycle_id: recruitmentCycleId,
+                ...(teamName ? { team_name: teamName } : {}),
+                toggle_action: toggleAction,
+              });
+            }}
+          >
             <div className="flex items-center gap-[12px] text-left xs:gap-[8px] sm:gap-[8px]">
               <div className="relative h-6 w-6 flex-shrink-0">
                 <QuestionEmptyIcon className="absolute inset-0 transition-opacity duration-300 group-data-[state=closed]:opacity-100 group-data-[state=open]:opacity-0" />
@@ -61,6 +96,7 @@ export default function QuestionCard({
                   className="underline"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={onAnswerLinkClick}
                 >
                   {link.label}
                 </a>

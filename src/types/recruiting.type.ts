@@ -2,6 +2,7 @@ import type { PortableTextBlock } from '@portabletext/react';
 import { IGatsbyImageData } from 'gatsby-plugin-image';
 
 export interface VideoInformation {
+  _id: string;
   video_thumbnail: { asset: { gatsbyImageData: IGatsbyImageData } };
   presenter: { presenter_nickname: string; presenter_name: string }[];
   video_link: string;
@@ -33,6 +34,7 @@ export interface InaWordInformation {
 }
 
 export interface ArticleInformation {
+  _key: string;
   url: string;
   title: string;
   author: string;
@@ -46,6 +48,7 @@ export interface MediumInformation {
 }
 
 export interface FAQItem {
+  _key: string;
   question: string;
   answer: string;
 }

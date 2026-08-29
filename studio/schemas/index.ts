@@ -8,6 +8,7 @@ import { FAQItem } from './Types/FAQItem';
 import applyStepContent from './Types/applyStepContent';
 import article from './Types/article';
 import dateContent from './Types/dateContent';
+import departmentAnalytics from './Types/departmentAnalytics';
 import departmentSection from './Types/departmentSection';
 import informationContent from './Types/informationContent';
 import { mainPageContentTypes } from './Types/mainPageContent';
@@ -32,6 +33,7 @@ export const schemaTypes = [
   applyStepContent,
   article,
   dateContent,
+  departmentAnalytics,
   departmentSection,
   FAQItem,
   informationContent,

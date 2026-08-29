@@ -1,10 +1,14 @@
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdExternalContentCardClick } from '@/analytics/events';
 import { MediumInformation } from '@/types/recruiting.type';
 
 interface MediumProps {
   medium: MediumInformation;
+  recruitmentCycleId: string;
+  teamName: JdTeamName;
 }
 
-function Medium({ medium }: MediumProps) {
+function Medium({ medium, recruitmentCycleId, teamName }: MediumProps) {
   // 데이터가 없거나 글 목록이 비어있으면 미디엄 섹션을 보여주지 않음
   if (!medium || !medium.article || medium.article.length === 0) return null;
 
@@ -13,12 +17,22 @@ function Medium({ medium }: MediumProps) {
       <p className="T3_Sb_20 sm:T2_Sb_18 xs:T2_Sb_18 text-text-basicPrimary">
         {medium.title}
       </p>
-      {medium.article.map((item) => (
+      {medium.article.map((item, index) => (
         <a
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          key={item.title}
+          key={item._key}
+          onClick={() =>
+            trackJdExternalContentCardClick({
+              content_id: item._key,
+              content_position: index + 1,
+              content_type: 'medium',
+              page_type: 'jd',
+              recruitment_cycle_id: recruitmentCycleId,
+              team_name: teamName,
+            })
+          }
           className="flex items-center gap-5 self-stretch xs:flex-col xs:items-start sm:flex-col sm:items-start"
         >
           <img

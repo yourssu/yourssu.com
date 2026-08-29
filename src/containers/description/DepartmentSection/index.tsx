@@ -1,3 +1,4 @@
+import type { JdTeamName } from '@/analytics/contracts';
 import ApplyProcedure from '@/containers/description/ApplyProcedure';
 import InaWord from '@/containers/description/InaWord';
 import PortableTextInformationCard from '@/containers/description/Information/PortableTextInformationCard';
@@ -11,10 +12,17 @@ import {
 
 interface DepartmentSectionProps {
   procedure: ApplyProcedureInformation[] | null;
+  recruitmentCycleId: string;
   section: DepartmentSectionInformation;
+  teamName: JdTeamName;
 }
 
-function DepartmentSection({ procedure, section }: DepartmentSectionProps) {
+function DepartmentSection({
+  procedure,
+  recruitmentCycleId,
+  section,
+  teamName,
+}: DepartmentSectionProps) {
   switch (section.kind) {
     case 'richText':
       return <PortableTextInformationCard data={section} />;
@@ -28,7 +36,11 @@ function DepartmentSection({ procedure, section }: DepartmentSectionProps) {
       ) : null;
     case 'faq':
       return section.faqList?.length ? (
-        <TeamFAQ data={{ FAQList: section.faqList, title: section.title }} />
+        <TeamFAQ
+          data={{ FAQList: section.faqList, title: section.title }}
+          recruitmentCycleId={recruitmentCycleId}
+          teamName={teamName}
+        />
       ) : null;
     case 'roadToPro':
       return section.roadToProList?.length ? (
@@ -37,11 +49,17 @@ function DepartmentSection({ procedure, section }: DepartmentSectionProps) {
             roadToPro_list: section.roadToProList,
             title: section.title,
           }}
+          recruitmentCycleId={recruitmentCycleId}
+          teamName={teamName}
         />
       ) : null;
     case 'articles':
       return section.articles?.length ? (
-        <Medium medium={{ article: section.articles, title: section.title }} />
+        <Medium
+          medium={{ article: section.articles, title: section.title }}
+          recruitmentCycleId={recruitmentCycleId}
+          teamName={teamName}
+        />
       ) : null;
   }
 }

@@ -1,5 +1,6 @@
 import { navigate } from 'gatsby';
 
+import { trackMainRecruitingCtaClick } from '@/analytics/events';
 import { BoxButton } from '@/components/Button/BoxButton';
 
 interface RecruitmentBannerProps {
@@ -45,7 +46,15 @@ function RecruitmentBanner({
 
       {/* 버튼 영역 */}
       <div className="relative">
-        <BoxButton onClick={() => navigate(buttonLink)}>
+        <BoxButton
+          onClick={() => {
+            trackMainRecruitingCtaClick({
+              cta_label: 'apply',
+              cta_location: 'bottom_cta',
+            });
+            navigate(buttonLink);
+          }}
+        >
           <span className="block xs:hidden sm:hidden">
             {buttonText.desktop}
           </span>

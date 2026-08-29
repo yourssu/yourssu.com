@@ -64,6 +64,26 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Generate Environment Variables File for Production
+        run: |
+          {
+            echo "GATSBY_APP_SANITY_TOKEN=$GATSBY_APP_SANITY_TOKEN"
+            echo "GATSBY_APP_SANITY_PROJECT_ID=$SANITY_PROJECT_ID"
+            echo "GATSBY_APP_SANITY_DATASET=$GATSBY_APP_SANITY_DATASET"
+            echo "GATSBY_APP_GA_ID=$GATSBY_APP_GA_ID"
+            echo "GATSBY_APP_POSTHOG_KEY=$GATSBY_APP_POSTHOG_KEY"
+            echo "GATSBY_APP_POSTHOG_DEPLOYMENT_ENV=production"
+          } >> .env
+        env:
+          GATSBY_APP_SANITY_TOKEN: ${{ secrets.GATSBY_APP_SANITY_TOKEN }}
+          SANITY_PROJECT_ID: ${{ secrets.GATSBY_APP_SANITY_PROJECT_ID }}
+          GATSBY_APP_SANITY_DATASET: ${{ secrets.GATSBY_APP_SANITY_DATASET }}
+          GATSBY_APP_GA_ID: ${{ secrets.GATSBY_APP_GA_ID }}
+          GATSBY_APP_POSTHOG_KEY: ${{ secrets.GATSBY_APP_POSTHOG_KEY }}
+
+      - name: Validate CMS analytics metadata
+        run: pnpm check:analytics-metadata-dataset
+
       - name: Validate approved breaking GraphQL cutover (forced dry-run)
         if: github.event_name == 'release'
         run: >-
@@ -80,20 +100,6 @@ jobs:
 
       - name: Clean Gatsby build
         run: pnpm clean
-
-      - name: Generate Environment Variables File for Production
-        run: |
-          {
-            echo "GATSBY_APP_SANITY_TOKEN=$GATSBY_APP_SANITY_TOKEN"
-            echo "GATSBY_APP_SANITY_PROJECT_ID=$SANITY_PROJECT_ID"
-            echo "GATSBY_APP_SANITY_DATASET=$GATSBY_APP_SANITY_DATASET"
-            echo "GATSBY_APP_GA_ID=$GATSBY_APP_GA_ID"
-          } >> .env
-        env:
-          GATSBY_APP_SANITY_TOKEN: ${{ secrets.GATSBY_APP_SANITY_TOKEN }}
-          SANITY_PROJECT_ID: ${{ secrets.GATSBY_APP_SANITY_PROJECT_ID }}
-          GATSBY_APP_SANITY_DATASET: ${{ secrets.GATSBY_APP_SANITY_DATASET }}
-          GATSBY_APP_GA_ID: ${{ secrets.GATSBY_APP_GA_ID }}
 
       - name: Build application
         run: pnpm build

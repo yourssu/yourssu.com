@@ -10,6 +10,7 @@ export interface RecruitingScheduleProcedureStep {
 
 export interface RecruitingDepartmentReference {
   _id: string | null;
+  _rawBasicInformation?: unknown;
   basicInformation: {
     name: string | null;
     isRecruiting?: boolean | null;

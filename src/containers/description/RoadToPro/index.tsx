@@ -1,6 +1,8 @@
 import { GatsbyImage, getImage } from 'gatsby-plugin-image';
 import tw from 'tailwind-styled-components';
 
+import type { JdTeamName } from '@/analytics/contracts';
+import { trackJdExternalContentCardClick } from '@/analytics/events';
 import {
   RoadToProInformation,
   VideoInformation,
@@ -10,14 +12,21 @@ import useRoadToProDetail from './hook';
 
 interface RoadToProProps {
   roadToPro: RoadToProInformation;
+  recruitmentCycleId: string;
+  teamName: JdTeamName;
 }
 
-function RoadToPro({ roadToPro }: RoadToProProps) {
+function RoadToPro({
+  roadToPro,
+  recruitmentCycleId,
+  teamName,
+}: RoadToProProps) {
   const data = useRoadToProDetail();
   const videos =
     roadToPro?.roadToPro_list?.filter((video): video is VideoInformation =>
       Boolean(
-        video?.video_thumbnail?.asset?.gatsbyImageData &&
+        video?._id &&
+        video.video_thumbnail?.asset?.gatsbyImageData &&
         video.video_link &&
         Array.isArray(video.presenter),
       ),
@@ -32,17 +41,28 @@ function RoadToPro({ roadToPro }: RoadToProProps) {
         {roadToPro.title || 'Road to Pro'}
       </div>
       <VideoInfoContainer>
-        {videos.map((video) => {
+        {videos.map((video, index) => {
           const thumbnail = getImage(
             video.video_thumbnail.asset.gatsbyImageData,
           );
           return (
-            <div key={video.video_link} className="flex flex-col gap-3">
-              <VideoContainer
-                href={video.video_link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <ContentCard
+              key={video._id}
+              href={video.video_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                trackJdExternalContentCardClick({
+                  content_id: video._id,
+                  content_position: index + 1,
+                  content_type: 'youtube',
+                  page_type: 'jd',
+                  recruitment_cycle_id: recruitmentCycleId,
+                  team_name: teamName,
+                })
+              }
+            >
+              <VideoContainer>
                 {thumbnail && <Thumbnail image={thumbnail} alt="thumbnail" />}
                 <Gradient src={data.gradientImg.publicURL} alt="gradient" />
                 <PlayButton src={data.playIcon.publicURL} alt="play" />
@@ -55,7 +75,7 @@ function RoadToPro({ roadToPro }: RoadToProProps) {
                   )
                   .join(', ')}
               </p>
-            </div>
+            </ContentCard>
           );
         })}
       </VideoInfoContainer>
@@ -80,7 +100,13 @@ const VideoInfoContainer = tw.div`
   xs:gap-y-5
 `;
 
-const VideoContainer = tw.a`
+const ContentCard = tw.a`
+  flex
+  flex-col
+  gap-3
+`;
+
+const VideoContainer = tw.div`
   relative
   flex
   h-fit
