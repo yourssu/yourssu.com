@@ -1,5 +1,14 @@
 import { defineField, defineType } from 'sanity';
 
+import {
+  MAIN_CONTENT_CATEGORIES,
+  MAIN_CONTENT_TYPES,
+  TF_NAMES,
+} from '../../../shared/analyticsMetadata';
+
+const analyticsOptions = (values: readonly string[]) =>
+  values.map((value) => ({ title: value, value }));
+
 const hero = defineType({
   name: 'mainPageHero',
   title: '메인 배너',
@@ -63,6 +72,15 @@ const productItem = defineType({
       name: 'link',
       title: '서비스 링크',
       type: 'url',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'analyticsTfName',
+      title: '분석용 TF 값',
+      description:
+        'PostHog main_tf_card_click의 tf_name에 저장되는 고정 값입니다.',
+      type: 'string',
+      options: { list: analyticsOptions(TF_NAMES) },
       validation: (rule) => rule.required(),
     }),
   ],
@@ -306,6 +324,24 @@ const channelItem = defineType({
       type: 'array',
       of: [{ type: 'string' }],
       validation: (rule) => rule.required().min(1),
+    }),
+    defineField({
+      name: 'analyticsCategory',
+      title: '분석용 카테고리',
+      description:
+        'PostHog 콘텐츠 이벤트의 category 값입니다. 분류가 없으면 none을 선택하세요.',
+      type: 'string',
+      options: { list: analyticsOptions(MAIN_CONTENT_CATEGORIES) },
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'analyticsContentType',
+      title: '분석용 콘텐츠 유형',
+      description:
+        'PostHog 콘텐츠 이벤트의 content_type에 저장되는 고정 값입니다.',
+      type: 'string',
+      options: { list: analyticsOptions(MAIN_CONTENT_TYPES) },
+      validation: (rule) => rule.required(),
     }),
   ],
   preview: {

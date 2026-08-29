@@ -1,5 +1,9 @@
 import { graphql } from 'gatsby';
 
+import {
+  readMainContentAnalyticsMetadata,
+  readProductAnalyticsMetadata,
+} from '@/analytics/cmsMetadata';
 import Layout from '@/components/Layout';
 import Seo from '@/components/Seo';
 import Banner from '@/containers/landing/Banner';
@@ -21,14 +25,23 @@ export default function Home({ data }: HomeProps) {
 
   if (!page) throw new Error('Sanity에 mainPage 문서가 없습니다.');
 
+  const productAnalytics = readProductAnalyticsMetadata(
+    page._rawProduct,
+    page.product.items.map(({ _key }) => _key),
+  );
+  const channelAnalytics = readMainContentAnalyticsMetadata(
+    page._rawChannel,
+    page.channel.items.map(({ _key }) => _key),
+  );
+
   return (
     <Layout isMainPage>
       <Banner data={page.hero} />
-      <Product data={page.product} />
+      <Product analyticsByKey={productAnalytics} data={page.product} />
       <MissionVision data={page.missionVision} />
       <CoreValue data={page.coreValue} />
       <Culture data={page.culture} />
-      <Channel data={page.channel} />
+      <Channel analyticsByKey={channelAnalytics} data={page.channel} />
       <ReviewCarousel data={page.reviews} />
       <ToRecruit data={page.recruit} />
     </Layout>
@@ -39,6 +52,8 @@ export const query = graphql`
   query HomePageQuery {
     allSanityMainPage(filter: { _id: { eq: "mainPage" } }, limit: 1) {
       nodes {
+        _rawProduct
+        _rawChannel
         hero {
           title
           images {

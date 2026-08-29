@@ -18,6 +18,7 @@ export interface RecruitingPageData {
     cards: {
       _key: string;
       department: {
+        _rawBasicInformation: unknown;
         basicInformation: {
           name: string;
           icon: SanityImage;
@@ -54,6 +55,7 @@ export interface RecruitingPageData {
         label: string;
         href: string;
       };
+      _rawLink?: unknown;
     }[];
   };
 }

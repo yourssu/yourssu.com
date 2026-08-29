@@ -1,5 +1,7 @@
 import { defineField, defineType } from 'sanity';
 
+import { FAQ_LINK_ANALYTICS_ACTIONS } from '../../../shared/analyticsMetadata';
+
 const header = defineType({
   name: 'recruitingPageHeader',
   title: '섹션 제목',
@@ -213,6 +215,20 @@ const faqLink = defineType({
       type: 'url',
       validation: (rule) =>
         rule.required().uri({ scheme: ['http', 'https', 'mailto'] }),
+    }),
+    defineField({
+      name: 'analyticsAction',
+      title: '분석 동작',
+      description:
+        '문의 링크면 contact, 이벤트를 수집하지 않는 일반 링크면 none을 선택하세요.',
+      type: 'string',
+      options: {
+        list: FAQ_LINK_ANALYTICS_ACTIONS.map((value) => ({
+          title: value,
+          value,
+        })),
+      },
+      validation: (rule) => rule.required(),
     }),
   ],
 });

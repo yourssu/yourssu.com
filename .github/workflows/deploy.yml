@@ -64,23 +64,6 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Validate approved breaking GraphQL cutover (forced dry-run)
-        if: github.event_name == 'release'
-        run: >-
-          pnpm --dir studio exec sanity graphql deploy --dry-run --force
-          --dataset production
-        env:
-          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-
-      - name: Deploy GraphQL API
-        if: github.event_name == 'release'
-        run: pnpm --dir studio exec sanity graphql deploy --force
-        env:
-          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-
-      - name: Clean Gatsby build
-        run: pnpm clean
-
       - name: Generate Environment Variables File for Production
         run: |
           {
@@ -97,6 +80,26 @@ jobs:
           GATSBY_APP_SANITY_DATASET: ${{ secrets.GATSBY_APP_SANITY_DATASET }}
           GATSBY_APP_GA_ID: ${{ secrets.GATSBY_APP_GA_ID }}
           GATSBY_APP_POSTHOG_KEY: ${{ secrets.GATSBY_APP_POSTHOG_KEY }}
+
+      - name: Validate CMS analytics metadata
+        run: pnpm check:analytics-metadata-dataset
+
+      - name: Validate approved breaking GraphQL cutover (forced dry-run)
+        if: github.event_name == 'release'
+        run: >-
+          pnpm --dir studio exec sanity graphql deploy --dry-run --force
+          --dataset production
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+      - name: Deploy GraphQL API
+        if: github.event_name == 'release'
+        run: pnpm --dir studio exec sanity graphql deploy --force
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+      - name: Clean Gatsby build
+        run: pnpm clean
 
       - name: Build application
         run: pnpm build

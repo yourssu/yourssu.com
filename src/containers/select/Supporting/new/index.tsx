@@ -1,7 +1,10 @@
 import { Link } from 'gatsby';
 import { useEffect, useRef } from 'react';
 
-import { getRecruitingTeamName } from '@/analytics/contracts';
+import {
+  readDepartmentAnalyticsMetadata,
+  type DepartmentAnalyticsMetadata,
+} from '@/analytics/cmsMetadata';
 import { trackRecruitingJdCardClick } from '@/analytics/events';
 import { observeRecruitingJdCardImpression } from '@/analytics/recruitingImpression';
 import RecruitSectionLayout from '@/components/Layout/RecruitSectionLayout';
@@ -43,19 +46,21 @@ type RecruitingPosition = RecruitingPageData['positions']['cards'][number];
 function RecruitingPositionLink({
   card,
   cardPosition,
+  metadata,
   recruitmentCycleId,
 }: {
   card: RecruitingPosition;
   cardPosition: number;
+  metadata: DepartmentAnalyticsMetadata;
   recruitmentCycleId: string;
 }) {
   const { icon, name } = card.department.basicInformation;
   const IconComponent = icons[name as keyof typeof icons];
-  const teamName = getRecruitingTeamName(name);
+  const { recruitingTeamName: teamName, slug } = metadata;
   const cardRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
-    if (!cardRef.current || !teamName) return;
+    if (!cardRef.current) return;
 
     return observeRecruitingJdCardImpression(cardRef.current, {
       cardId: card._key,
@@ -67,17 +72,15 @@ function RecruitingPositionLink({
 
   return (
     <Link
-      to={name.toLowerCase().replaceAll(' ', '_')}
+      to={`/recruiting/${slug}`}
       innerRef={cardRef}
       className="flex items-center justify-between rounded-[0.75rem] border border-line-basicLight p-6 xs:p-5 sm:p-5"
-      onClick={() => {
-        if (teamName) {
-          trackRecruitingJdCardClick({
-            recruitment_cycle_id: recruitmentCycleId,
-            team_name: teamName,
-          });
-        }
-      }}
+      onClick={() =>
+        trackRecruitingJdCardClick({
+          recruitment_cycle_id: recruitmentCycleId,
+          team_name: teamName,
+        })
+      }
     >
       <h3 className="whitespace-pre-wrap text-2xl font-semibold text-text-basicSecondary">
         {name.replace(' ', '\n')}
@@ -104,12 +107,17 @@ function Supporting({ data, recruitmentCycleId }: SupportingProps) {
         {data.cards.map((card, index) => {
           const { _key, department } = card;
           const { isRecruiting, name } = department.basicInformation;
+          const metadata = readDepartmentAnalyticsMetadata(
+            department._rawBasicInformation,
+            `recruitingPage.positions.cards.${_key}.department.basicInformation`,
+          );
 
           return isRecruiting ? (
             <RecruitingPositionLink
               key={_key}
               card={card}
               cardPosition={index + 1}
+              metadata={metadata}
               recruitmentCycleId={recruitmentCycleId}
             />
           ) : (

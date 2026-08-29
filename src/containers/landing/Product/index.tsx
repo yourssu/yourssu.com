@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 
-import { getTfName } from '@/analytics/contracts';
+import type { TfName } from '@/analytics/contracts';
 import { trackMainTfCardClick } from '@/analytics/events';
 import MainTitle from '@/components/Title/MainTitle';
 import { MainPageData } from '@/types/mainPage';
@@ -9,10 +9,11 @@ import { ProductCard } from './ProductCard';
 import { ArrowLeftIcon, ArrowRightIcon } from './arrowIcons';
 
 interface ProductProps {
+  analyticsByKey: ReadonlyMap<string, TfName>;
   data: MainPageData['product'];
 }
 
-function Product({ data }: ProductProps) {
+function Product({ analyticsByKey, data }: ProductProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsInView, setItemsInView] = useState(3);
@@ -93,10 +94,11 @@ function Product({ data }: ProductProps) {
                     href={product.link}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={() => {
-                      const tfName = getTfName(product._key);
-                      if (tfName) trackMainTfCardClick({ tf_name: tfName });
-                    }}
+                    onClick={() =>
+                      trackMainTfCardClick({
+                        tf_name: analyticsByKey.get(product._key)!,
+                      })
+                    }
                   >
                     <ProductCard
                       title={product.title}

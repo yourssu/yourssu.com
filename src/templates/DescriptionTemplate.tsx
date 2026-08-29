@@ -2,7 +2,7 @@ import { graphql, Link } from 'gatsby';
 import { useBreakpoint } from 'gatsby-plugin-breakpoints';
 import { useEffect, useState } from 'react';
 
-import { getJdTeamNameFromDepartmentName } from '@/analytics/contracts';
+import type { JdTeamName } from '@/analytics/contracts';
 import { trackJdContactClick, trackJdToFaqClick } from '@/analytics/events';
 import ApplyButton from '@/components/Button/ApplyButton';
 import Layout from '@/components/Layout';
@@ -57,9 +57,11 @@ interface SanityDepartmentData {
 interface DescriptionTemplateProps {
   data: SanityDepartmentData;
   pageContext: {
+    departmentId: string;
+    jdTeamName: JdTeamName;
     name: string;
     recruitmentCycleId: string;
-    teamList: { name: string; isRecruiting: boolean }[];
+    teamList: { name: string; isRecruiting: boolean; slug: string }[];
     formSchedule: { start: Date | null; end: Date | null } | null;
     procedure:
       | {
@@ -74,7 +76,14 @@ function DescriptionTemplate({
   data: {
     allSanityDepartment: { edges },
   },
-  pageContext: { name, recruitmentCycleId, teamList, formSchedule, procedure },
+  pageContext: {
+    jdTeamName,
+    name,
+    recruitmentCycleId,
+    teamList,
+    formSchedule,
+    procedure,
+  },
 }: DescriptionTemplateProps) {
   const department = edges[0]?.node;
   if (!department?.sections?.length)
@@ -89,7 +98,7 @@ function DescriptionTemplate({
   }));
   const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const breakpoints = useBreakpoint();
-  const teamName = getJdTeamNameFromDepartmentName(name);
+  const teamName = jdTeamName;
 
   useEffect(() => {
     if (typeof window !== 'undefined' && formSchedule) {
@@ -102,6 +111,7 @@ function DescriptionTemplate({
       <span
         hidden
         aria-hidden="true"
+        data-analytics-team-name={teamName}
         data-recruitment-cycle-id={recruitmentCycleId}
       />
       <TeamHeader name={name} basicInformation={department.basicInformation} />
@@ -198,9 +208,9 @@ export function Head({
   );
 }
 
-export const querySanityDataByName = graphql`
-  query querySanityDataByName($name: String) {
-    allSanityDepartment(filter: { basicInformation: { name: { eq: $name } } }) {
+export const querySanityDataById = graphql`
+  query querySanityDataById($departmentId: String) {
+    allSanityDepartment(filter: { _id: { eq: $departmentId } }) {
       edges {
         node {
           basicInformation {

@@ -17,6 +17,8 @@
     "test:analytics": "tsx --test src/analytics/analytics.test.ts",
     "check:recruiting-schedule": "pnpm exec tsx scripts/check-recruitingSchedule.ts",
     "check:department-sections": "pnpm exec tsx studio/migrations/rs-mig-02-department-sections-backfill/check.ts",
+    "check:analytics-metadata": "pnpm exec tsx studio/migrations/spr-124-analytics-metadata-backfill/check.ts",
+    "check:analytics-metadata-dataset": "pnpm exec tsx scripts/check-analyticsMetadataDataset.ts",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",

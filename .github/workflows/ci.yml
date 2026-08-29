@@ -35,6 +35,9 @@ jobs:
       - name: Test analytics
         run: pnpm test:analytics
 
+      - name: Check analytics metadata migration
+        run: pnpm check:analytics-metadata
+
       - name: Typecheck Studio
         run: pnpm --dir studio run typecheck
 

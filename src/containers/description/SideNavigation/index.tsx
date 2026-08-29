@@ -18,7 +18,7 @@ interface SideNavigationProps {
     recruitmentCycleId: string;
     teamName: JdTeamName;
   };
-  teamList: { name: string; isRecruiting: boolean }[];
+  teamList: { name: string; isRecruiting: boolean; slug: string }[];
 }
 
 function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
@@ -29,7 +29,7 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
       <NavigationContainer>
         <h2 className="T3_Sb_20">TEAM</h2>
         <NavigationList>
-          {teamList.map(({ name, isRecruiting }) => {
+          {teamList.map(({ name, isRecruiting, slug }) => {
             const isActive = currentTeam.name === name;
             const content = (
               <>
@@ -40,7 +40,7 @@ function SideNavigation({ currentTeam, teamList }: SideNavigationProps) {
 
             return isRecruiting ? (
               <NavigationItem
-                to={`/recruiting/${name.toLowerCase().replaceAll(' ', '_')}`}
+                to={`/recruiting/${slug}`}
                 key={name}
                 $active={isActive}
               >

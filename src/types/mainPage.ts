@@ -9,6 +9,8 @@ interface Section<T> {
 }
 
 export interface MainPageData {
+  _rawChannel: unknown;
+  _rawProduct: unknown;
   hero: {
     title: string;
     images: SanityImage[];

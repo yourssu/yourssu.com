@@ -1,7 +1,7 @@
 import {
   classifyPage,
-  getJdTeamNameFromPathname,
   normalizePathname,
+  type JdTeamName,
   type PageType,
 } from '@/analytics/contracts';
 import {
@@ -28,6 +28,7 @@ import {
   type SessionUtm,
 } from '@/analytics/utm';
 import { getSafeCurrentUrl } from '@/analytics/url';
+import { isOneOf, JD_TEAM_NAMES } from '../../shared/analyticsMetadata';
 
 interface RouteLocation {
   origin?: string;
@@ -36,14 +37,12 @@ interface RouteLocation {
 }
 
 interface RouteAnalyticsContext {
+  jdTeamName?: JdTeamName;
   recruitmentCycleId?: string;
 }
 
 interface RouteEventHandlers {
-  jdPageViewed(
-    teamName: ReturnType<typeof getJdTeamNameFromPathname>,
-    recruitmentCycleId: string,
-  ): void;
+  jdPageViewed(teamName: JdTeamName, recruitmentCycleId: string): void;
   mainPageViewed(): void;
   pageViewed(
     pageType: PageType,
@@ -69,6 +68,7 @@ export function createRouteEventTracker(handlers: RouteEventHandlers) {
 
     const pageType = classifyPage(pathname);
     const recruitmentCycleId = context.recruitmentCycleId;
+    const jdTeamName = context.jdTeamName;
     lastPathname = pathname;
     handlers.pageViewed(pageType, location, recruitmentCycleId);
 
@@ -83,11 +83,8 @@ export function createRouteEventTracker(handlers: RouteEventHandlers) {
         break;
       }
       case 'jd': {
-        if (recruitmentCycleId) {
-          handlers.jdPageViewed(
-            getJdTeamNameFromPathname(pathname),
-            recruitmentCycleId,
-          );
+        if (recruitmentCycleId && jdTeamName) {
+          handlers.jdPageViewed(jdTeamName, recruitmentCycleId);
         }
         break;
       }
@@ -122,8 +119,8 @@ export function createSessionUtmSynchronizer(handlers: SessionUtmHandlers) {
 
 export function getScrollRouteContext(
   pageType: PageType,
-  pathname: string,
   recruitmentCycleId?: string,
+  jdTeamName?: JdTeamName,
 ): ScrollRouteContext {
   switch (pageType) {
     case 'main':
@@ -133,11 +130,11 @@ export function getScrollRouteContext(
         ? { pageType, recruitmentCycleId }
         : { pageType: 'other' };
     case 'jd':
-      return recruitmentCycleId
+      return recruitmentCycleId && jdTeamName
         ? {
             pageType,
             recruitmentCycleId,
-            teamName: getJdTeamNameFromPathname(pathname),
+            teamName: jdTeamName,
           }
         : { pageType: 'other' };
     case 'other':
@@ -187,21 +184,30 @@ export function trackRouteUpdate(location: RouteLocation) {
   if (sessionId) synchronizeSessionUtm(sessionId);
 
   const pageType = classifyPage(location.pathname);
-  const recruitmentCycleId =
+  const renderedContext =
     pageType === 'jd' || pageType === 'recruiting'
-      ? getRenderedRecruitmentCycleId()
-      : undefined;
-  if (!trackRouteEvent(location, { recruitmentCycleId })) return;
+      ? getRenderedRouteAnalyticsContext()
+      : {};
+  if (!trackRouteEvent(location, renderedContext)) return;
   resetScrollDepthTracking(
-    getScrollRouteContext(pageType, location.pathname, recruitmentCycleId),
+    getScrollRouteContext(
+      pageType,
+      renderedContext.recruitmentCycleId,
+      renderedContext.jdTeamName,
+    ),
   );
 }
 
-function getRenderedRecruitmentCycleId() {
-  const value = document
-    .querySelector<HTMLElement>('[data-recruitment-cycle-id]')
-    ?.dataset.recruitmentCycleId?.trim();
-  return value || undefined;
+function getRenderedRouteAnalyticsContext(): RouteAnalyticsContext {
+  const element = document.querySelector<HTMLElement>(
+    '[data-recruitment-cycle-id]',
+  );
+  const recruitmentCycleId = element?.dataset.recruitmentCycleId?.trim();
+  const teamName = element?.dataset.analyticsTeamName?.trim();
+  return {
+    ...(recruitmentCycleId ? { recruitmentCycleId } : {}),
+    ...(isOneOf(JD_TEAM_NAMES, teamName) ? { jdTeamName: teamName } : {}),
+  };
 }
 
 function getSessionStorage() {

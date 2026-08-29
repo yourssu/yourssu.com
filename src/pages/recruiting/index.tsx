@@ -76,6 +76,7 @@ export const query = graphql`
           cards {
             _key
             department {
+              _rawBasicInformation
               basicInformation {
                 name
                 isRecruiting
@@ -121,6 +122,7 @@ export const query = graphql`
             _key
             question
             answer
+            _rawLink
             link {
               label
               href

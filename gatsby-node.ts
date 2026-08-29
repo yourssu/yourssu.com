@@ -1,5 +1,6 @@
 import { type GatsbyNode } from 'gatsby';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import { readDepartmentAnalyticsMetadata } from './src/analytics/cmsMetadata';
 import recruitingSchedule, {
   type RecruitingDepartmentReference,
   type RecruitingScheduleDocument,
@@ -17,6 +18,8 @@ interface QueryResult {
       positions: {
         cards: {
           department: {
+            _id: string;
+            _rawBasicInformation: unknown;
             basicInformation: {
               name: string;
               isRecruiting: boolean;
@@ -59,6 +62,7 @@ export const createPages: GatsbyNode['createPages'] = async ({
         edges {
           node {
             _id
+            _rawBasicInformation
             basicInformation {
               name
               isRecruiting
@@ -74,6 +78,8 @@ export const createPages: GatsbyNode['createPages'] = async ({
           positions {
             cards {
               department {
+                _id
+                _rawBasicInformation
                 basicInformation {
                   name
                   isRecruiting
@@ -195,8 +201,17 @@ export const createPages: GatsbyNode['createPages'] = async ({
 
   const teamList =
     queryAllSanityData.allSanityRecruitingPage.nodes[0]?.positions.cards.map(
-      ({ department }) => department.basicInformation,
+      ({ department }, index) => {
+        const basicInformation = department.basicInformation;
+        const metadata = readDepartmentAnalyticsMetadata(
+          department._rawBasicInformation,
+          `recruitingPage.positions.cards[${index}].department.basicInformation`,
+        );
+        return { ...basicInformation, slug: metadata.slug };
+      },
     ) ?? [];
+
+  const createdSlugs = new Set<string>();
 
   const generateDescriptionPage = (
     department: RecruitingDepartmentReference,
@@ -212,12 +227,24 @@ export const createPages: GatsbyNode['createPages'] = async ({
       department,
       knownDepartmentIds,
     );
-    const pathName = name.toLowerCase().replaceAll(' ', '_');
+    const metadata = readDepartmentAnalyticsMetadata(
+      department._rawBasicInformation,
+      `department.${department._id ?? '<missing-id>'}.basicInformation`,
+    );
+    if (createdSlugs.has(metadata.slug)) {
+      reporter.panicOnBuild(
+        `Recruiting department URL slug is duplicated: ${metadata.slug}`,
+      );
+      return;
+    }
+    createdSlugs.add(metadata.slug);
 
     createPage({
-      path: `recruiting/${pathName}`,
+      path: `/recruiting/${metadata.slug}`,
       component: DescriptionTemplateComponent,
       context: {
+        departmentId: department._id,
+        jdTeamName: metadata.jdTeamName,
         name,
         recruitmentCycleId,
         teamList,

@@ -4,14 +4,12 @@ import test from 'node:test';
 
 import { getAnalyticsConfig } from '@/analytics/config';
 import {
-  classifyPage,
-  getFaqToggleAction,
-  getJdTeamNameFromDepartmentName,
-  getJdTeamNameFromPathname,
-  getMainContentAnalytics,
-  getRecruitingTeamName,
-  getTfName,
-} from '@/analytics/contracts';
+  readDepartmentAnalyticsMetadata,
+  readFaqLinkAnalyticsAction,
+  readMainContentAnalyticsMetadata,
+  readProductAnalyticsMetadata,
+} from '@/analytics/cmsMetadata';
+import { classifyPage, getFaqToggleAction } from '@/analytics/contracts';
 import { createRecruitingJdCardImpressionTracker } from '@/analytics/recruitingImpression';
 import {
   createRouteEventTracker,
@@ -192,48 +190,149 @@ test('every deployment environment uses the fixed PostHog ingestion host', () =>
   );
 });
 
-test('page and team mappings preserve the GTM contract and omissions', () => {
+test('page classification keeps recruitment-shaped routes separate', () => {
   assert.equal(classifyPage('/'), 'main');
   assert.equal(classifyPage('/recruiting/'), 'recruiting');
   assert.equal(classifyPage('/recruiting/product_designer/'), 'jd');
   assert.equal(classifyPage('/404/'), 'other');
+});
 
-  assert.equal(getRecruitingTeamName('Product Manager'), 'pm');
-  assert.equal(getRecruitingTeamName('Backend Engineer'), 'backend');
-  assert.equal(
-    getJdTeamNameFromPathname('/recruiting/product_designer'),
-    'design',
+test('CMS metadata controls analytics independently of labels, URLs, and order', () => {
+  const products = readProductAnalyticsMetadata(
+    {
+      items: [
+        { _key: 'new-key', analyticsTfName: 'ssutime', title: '새 이름' },
+      ],
+    },
+    ['new-key'],
   );
-  assert.equal(
-    getJdTeamNameFromDepartmentName('Frontend Engineer'),
-    'frontend',
-  );
+  assert.equal(products.get('new-key'), 'ssutime');
 
-  // These two values exist for recruiting-card clicks but are intentionally
-  // excluded from the historical JD URL mapping.
+  const contents = readMainContentAnalyticsMetadata(
+    {
+      items: [
+        {
+          _key: 'repurposed-key',
+          analyticsCategory: 'ios',
+          analyticsContentType: 'instagram',
+          title: '편집자가 바꾼 제목',
+        },
+      ],
+    },
+    ['repurposed-key'],
+  );
+  assert.deepEqual(contents.get('repurposed-key'), {
+    category: 'ios',
+    content_type: 'instagram',
+  });
+
+  const uncategorized = readMainContentAnalyticsMetadata(
+    {
+      items: [
+        {
+          _key: 'uncategorized',
+          analyticsCategory: 'none',
+          analyticsContentType: 'medium',
+        },
+      ],
+    },
+    ['uncategorized'],
+  );
+  assert.deepEqual(uncategorized.get('uncategorized'), {
+    category: '',
+    content_type: 'medium',
+  });
+});
+
+test('department metadata survives display-name changes and preserves JD omissions', () => {
+  assert.deepEqual(
+    readDepartmentAnalyticsMetadata(
+      {
+        analytics: {
+          jdTeamName: 'none',
+          recruitingTeamName: 'backend',
+        },
+        name: 'Backend Platform Team (renamed)',
+        slug: { current: 'backend_engineer' },
+      },
+      'department.fixture.basicInformation',
+    ),
+    {
+      jdTeamName: 'none',
+      recruitingTeamName: 'backend',
+      slug: 'backend_engineer',
+    },
+  );
+});
+
+test('FAQ contact semantics follow the link instead of its array position', () => {
   assert.equal(
-    getJdTeamNameFromPathname('/recruiting/product_manager'),
-    'none',
+    readFaqLinkAnalyticsAction(
+      { analyticsAction: 'contact' },
+      'recruitingPage.faq.items.first.link',
+    ),
+    'contact',
   );
   assert.equal(
-    getJdTeamNameFromPathname('/recruiting/backend_engineer'),
+    readFaqLinkAnalyticsAction(
+      { analyticsAction: 'none' },
+      'recruitingPage.faq.items.last.link',
+    ),
     'none',
   );
 });
 
-test('Sanity keys map cards without inspecting rendered text or URLs', () => {
-  assert.equal(getTfName('ssu-time'), 'ssutime');
-  assert.equal(getTfName('usaint'), 'soongsil_life');
-  assert.equal(getTfName('signal'), 'signal');
-  assert.deepEqual(getMainContentAnalytics('ios-story'), {
-    category: 'ios',
-    content_type: 'instagram',
-  });
-  assert.deepEqual(getMainContentAnalytics('oklch'), {
-    category: '',
-    content_type: 'medium',
-  });
-  assert.equal(getMainContentAnalytics('unknown'), undefined);
+test('missing or invalid CMS analytics metadata fails loudly', () => {
+  assert.throws(
+    () =>
+      readProductAnalyticsMetadata({ items: [{ _key: 'new-card' }] }, [
+        'new-card',
+      ]),
+    /analyticsTfName/,
+  );
+  assert.throws(
+    () =>
+      readMainContentAnalyticsMetadata(
+        {
+          items: [
+            {
+              _key: 'new-content',
+              analyticsCategory: 'unknown',
+              analyticsContentType: 'medium',
+            },
+          ],
+        },
+        ['new-content'],
+      ),
+    /analyticsCategory/,
+  );
+  assert.throws(
+    () =>
+      readDepartmentAnalyticsMetadata(
+        { name: 'Missing metadata' },
+        'department.missing.basicInformation',
+      ),
+    /slug/,
+  );
+});
+
+test('runtime tracking contains no display-name, URL-slug, or array-position mappings', () => {
+  const contracts = readFileSync(
+    new URL('./contracts.ts', import.meta.url),
+    'utf8',
+  );
+  const supporting = readFileSync(
+    new URL('../containers/select/Supporting/new/index.tsx', import.meta.url),
+    'utf8',
+  );
+  const faq = readFileSync(
+    new URL('../containers/select/FAQ/index.tsx', import.meta.url),
+    'utf8',
+  );
+
+  assert.doesNotMatch(contracts, /_BY_(DISPLAY_NAME|KEY|SLUG)/);
+  assert.doesNotMatch(supporting, /toLowerCase\(\).*replaceAll/);
+  assert.doesNotMatch(faq, /items\.length\s*-\s*1/);
 });
 
 test('FAQ actions are derived from the pre-click accordion state', () => {
@@ -447,8 +546,11 @@ test('route tracking fires once per pathname and fires again after returning', (
   );
   assert.equal(
     trackRoute(
-      { pathname: '/recruiting/product_designer' },
-      { recruitmentCycleId: 'recruiting-schedule-2026-2' },
+      { pathname: '/recruiting/renamed-team' },
+      {
+        jdTeamName: 'design',
+        recruitmentCycleId: 'recruiting-schedule-2026-2',
+      },
     ),
     true,
   );
@@ -478,9 +580,7 @@ test('recruitment-shaped 404 routes keep the generic pageview only once', () => 
   assert.equal(trackRoute({ pathname: '/recruiting/not-a-team/' }), true);
   assert.equal(trackRoute({ pathname: '/recruiting/not-a-team' }), false);
   assert.deepEqual(captured, ['$pageview:jd']);
-  assert.deepEqual(getScrollRouteContext('jd', '/recruiting/not-a-team'), {
-    pageType: 'other',
-  });
+  assert.deepEqual(getScrollRouteContext('jd'), { pageType: 'other' });
 });
 
 test('scroll thresholds fire once in ascending order even when crossed together', () => {

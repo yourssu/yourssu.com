@@ -11,7 +11,7 @@ interface ContentsCardProps {
   contentUrl: string;
   contentId: string;
   contentPosition: number;
-  analytics?: MainContentAnalytics;
+  analytics: MainContentAnalytics;
 }
 
 export function ContentsCard({
@@ -30,15 +30,13 @@ export function ContentsCard({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={title}
-      onClick={() => {
-        if (analytics) {
-          trackMainRecruitingContentCardClick({
-            ...analytics,
-            content_id: contentId,
-            content_position: contentPosition,
-          });
-        }
-      }}
+      onClick={() =>
+        trackMainRecruitingContentCardClick({
+          ...analytics,
+          content_id: contentId,
+          content_position: contentPosition,
+        })
+      }
     >
       <div
         className="inline-flex flex-col items-start justify-center gap-[20px]"
